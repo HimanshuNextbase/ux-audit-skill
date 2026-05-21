@@ -16,6 +16,10 @@ ux-audit-skill/
 │   ├── system.md                    ← Full audit system prompt (load this)
 │   └── quick-scan.md                ← Lightweight quick-scan variant
 │
+├── checklists/                      ← Platform-specific checklists (load one, not both)
+│   ├── site.md                      ← Website / web app checklist
+│   └── app.md                       ← Mobile app checklist
+│
 ├── knowledge/                       ← Reference knowledge base (12 files)
 │   ├── index.md                     ← Index of all knowledge files
 │   ├── 01-ux-guidelines-99-rules.md
@@ -162,10 +166,13 @@ agent.run("Audit https://example.com — full report, focus on accessibility")
 
 ## Audit Modes
 
-| Mode | Prompt file | Use when |
-|------|------------|----------|
-| **Full audit** | `prompts/system.md` | Complete evidence-backed report with severity scores, remediation plan, CI recommendations |
-| **Quick scan** | `prompts/quick-scan.md` | Rapid triage — top 10 issues in < 10 min, no deep scoring |
+| Mode | Prompt file | Checklist | Use when |
+|------|------------|-----------|----------|
+| **Full site audit** | `prompts/system.md` | `checklists/site.md` | Complete web audit with severity scores, remediation plan, CI recommendations |
+| **Full app audit** | `prompts/system.md` | `checklists/app.md` | Complete mobile app audit |
+| **Quick scan** | `prompts/quick-scan.md` | — | Rapid triage — top 10 issues in < 10 min |
+
+**Context tip:** Load `prompts/system.md` + one checklist file only. Load `knowledge/` files selectively when deeper reference is needed on a specific topic.
 
 ---
 
