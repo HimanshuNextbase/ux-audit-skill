@@ -1,0 +1,63 @@
+{
+  "name": "ux-audit",
+  "version": "1.0.0",
+  "type": "skill",
+  "description": "Systematic UX audit skill for websites, web apps, and mobile apps. Accepts a live URL, source code, or screenshots. Produces prioritised, evidence-backed findings with severity scores, standards citations, and fix recommendations.",
+  "author": "HimanshuNextbase",
+  "domain": "ux-quality-assurance",
+  "entry_point": "prompts/system.md",
+  "quick_entry_point": "prompts/quick-scan.md",
+  "knowledge_base": "knowledge/",
+  "templates": "templates/",
+  "examples": "examples/",
+  "capabilities": [
+    "heuristic-review",
+    "accessibility-audit",
+    "visual-interaction-audit",
+    "navigation-ia-audit",
+    "forms-auth-audit",
+    "mobile-audit",
+    "performance-audit",
+    "seo-audit",
+    "security-baseline",
+    "ai-slop-detection",
+    "severity-scoring",
+    "report-generation"
+  ],
+  "input_types": [
+    "live-url",
+    "url-with-credentials",
+    "frontend-repo",
+    "fullstack-repo",
+    "screenshots",
+    "combined"
+  ],
+  "output_types": [
+    "full-report",
+    "executive-scorecard",
+    "issue-backlog",
+    "remediation-plan"
+  ],
+  "standards": [
+    "WCAG 2.2",
+    "Nielsen 10 Heuristics",
+    "Baymard Research",
+    "Google Core Web Vitals",
+    "OWASP ASVS",
+    "Material Design 3",
+    "Apple HIG",
+    "W3C WAI-ARIA APG",
+    "WCAG-EM"
+  ],
+  "severity_model": {
+    "factors": ["user_impact", "business_criticality", "reach", "recoverability", "compliance_risk"],
+    "max_score": 20,
+    "bands": {
+      "P0": "17-20 or override",
+      "P1": "13-16",
+      "P2": "8-12",
+      "P3": "1-7"
+    }
+  },
+  "tags": ["ux", "audit", "accessibility", "performance", "usability", "a11y", "wcag", "mobile", "seo"]
+}

@@ -1,0 +1,38 @@
+{
+  "id": "CATEGORY-###",
+  "title": "Short, specific title describing the problem",
+  "category": "IA | CONTENT | FORM | A11Y | MOBILE | PERF | SEO | TRUST | PWA",
+  "priority": "P0 | P1 | P2 | P3",
+  "severity_score": 0,
+  "severity_breakdown": {
+    "user_impact": "0–4",
+    "business_criticality": "0–4",
+    "reach": "0–4",
+    "recoverability": "0–4",
+    "compliance_risk": "0–4"
+  },
+  "affected_flows": ["Flow name"],
+  "affected_pages": ["/path/to/page"],
+  "evidence": {
+    "viewport": "390x844 | 1440x900",
+    "browser": "Chromium 124 | Safari | Firefox",
+    "reproduction_steps": [
+      "Step 1",
+      "Step 2",
+      "Step 3"
+    ],
+    "artifacts": ["screenshot.png", "playwright-trace.zip"]
+  },
+  "why_it_matters": "User impact + business impact in 1–2 sentences.",
+  "standards_violated": [
+    "WCAG 2.2 — [criterion number and name]",
+    "Nielsen heuristic — [heuristic name]"
+  ],
+  "recommendation": "Specific, actionable fix. Include the element, the change, and the expected result.",
+  "owner": "Team or role responsible",
+  "acceptance_criteria": [
+    "Observable condition 1 that confirms the fix is complete",
+    "Observable condition 2"
+  ],
+  "retest_method": "Playwright scenario | axe rerun | manual keyboard check | Lighthouse rerun | usability task"
+}
