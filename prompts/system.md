@@ -17,8 +17,8 @@ Ask or infer all of the following before touching any checklist:
 
 ### 0.1 — Product Understanding
 - **What is this product?** — Describe it in one sentence (what it does, who uses it)
-- **What type is it?** — Marketing site / SaaS app / E-commerce / Mobile app / PWA / Internal tool / Other
-- **What industry / domain?** — Finance, Healthcare, E-commerce, SaaS, Creative, Government, etc. (affects which industry anti-patterns apply — see `knowledge/04`)
+- **What type is it?** — Marketing site / SaaS app / Mobile app / PWA / Internal tool / Other
+- **What industry / domain?** — Finance, Healthcare, SaaS, Creative, Government, etc. (affects which industry anti-patterns apply — see `knowledge/04`)
 - **Who are the primary users?** — Age range, technical level, accessibility needs, device preferences
 - **What stage is the product?** — Early MVP / Growing product / Mature / Pre-launch
 
@@ -35,7 +35,6 @@ Minimum journeys to map (adjust for product type):
 |-------------|-----------------|
 | Marketing / landing page | 2–3 (discover → understand → convert) |
 | CRUD tool | 4 (create / read / update / delete) |
-| E-commerce | 6 (browse → product → cart → checkout → confirm → error recovery) |
 | Mobile app | 5 (install → onboard → core task → return visit → account) |
 | SaaS app | 6–10 (sign-up → onboard → core task → share → settings → billing) |
 | PWA | 5+ (install → core task → offline → update → re-engage) |
@@ -182,7 +181,6 @@ Work through each category below. Flag every issue with its taxonomy code.
 - Autocorrect disabled for data entry fields (names, codes, addresses)
 - Key elements reachable with one hand (primary actions in thumb zone)
 - Responsive to both horizontal and vertical orientation
-- Gallery photos are swipeable
 - No hover-only affordances (every hover state needs a focus and tap equivalent)
 
 #### PERFORMANCE (Visual Indicators)
@@ -313,7 +311,7 @@ Use this 5-factor rubric. Score each factor 0–4. Max total = 20.
 - **P2** (8–12) → planned backlog
 - **P3** (1–7) → opportunistic
 
-**P0 override rule:** Force P0 regardless of score when an issue blocks: checkout, sign-in, payment, legal consent, or keyboard-only completion on a critical journey.
+**P0 override rule:** Force P0 regardless of score when an issue blocks: sign-in, payment/billing, legal consent, or keyboard-only completion on a critical journey.
 
 ---
 
@@ -328,7 +326,7 @@ Use the appropriate template:
 - Lead with what is working (positives first — goodwill is an asset)
 - Group issues by taxonomy code (IA / CONTENT / FORM / A11Y / MOBILE / PERF / SEO / TRUST / PWA)
 - Every issue includes: what it is, why it matters, which standard it violates, and exactly how to fix it
-- Every finding cites at least one: WCAG 2.2, Nielsen heuristics, Baymard research, Core Web Vitals, OWASP ASVS, Material Design 3, Apple HIG, W3C WAI tutorials
+- Every finding cites at least one: WCAG 2.2, Nielsen heuristics, Core Web Vitals, OWASP ASVS, Material Design 3, Apple HIG, W3C WAI tutorials
 - Include a Quick Wins section (issues fixable in under 1 hour)
 - End with a Roadmap: P0 → P1 sprint items → P2 backlog → P3 polish
 
@@ -367,7 +365,6 @@ Use the appropriate template:
 |-------------|----------------------|
 | Marketing / landing page | 2–3 |
 | CRUD tool | 4 |
-| E-commerce | 6 (browse → product → cart → checkout → confirm → error) |
 | Social / community | 6–8 |
 | SaaS application | 6–10 |
 | Complex enterprise | 10–20+ |

@@ -296,7 +296,7 @@ Score each flagged issue across 5 factors (0–4 each, max 20):
 
 **Bands:** P0 = 17–20 (or override) · P1 = 13–16 · P2 = 8–12 · P3 = 1–7
 
-**P0 override:** Force P0 if the issue blocks checkout, sign-in, payment, legal consent, or keyboard-only completion on a critical journey — regardless of numeric score.
+**P0 override:** Force P0 if the issue blocks sign-in, payment/billing, legal consent, or keyboard-only completion on a critical journey — regardless of numeric score.
 
 ---
 

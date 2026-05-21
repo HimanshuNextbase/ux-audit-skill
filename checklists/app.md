@@ -119,7 +119,6 @@ Test on real device or accurate emulation at 390×844 (iPhone 14) and 360×800 (
 - [ ] Visual hierarchy clear within 2 seconds — primary / secondary / tertiary
 - [ ] Primary actions visually distinct from secondary actions
 - [ ] Images and product photos are high resolution and not blurry at device pixel ratio
-- [ ] Product images occupy 60–90% of screen width on product / detail pages (e-commerce)
 - [ ] Text on images is readable (sufficient contrast + not relying on image for legibility)
 - [ ] Icon set is consistent — one library across the app, no mixing styles
 - [ ] All icons represent what they actually do (no generic icons for specific actions)

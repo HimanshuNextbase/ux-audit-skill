@@ -41,7 +41,6 @@
   "standards": [
     "WCAG 2.2",
     "Nielsen 10 Heuristics",
-    "Baymard Research",
     "Google Core Web Vitals",
     "OWASP ASVS",
     "Material Design 3",

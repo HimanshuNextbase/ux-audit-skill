@@ -1,6 +1,6 @@
 # UX Audit Skill
 
-A comprehensive AI skill for automated UX auditing of any website, web app, or mobile app. Accepts a live URL, source code (frontend or full-stack), screenshots, or any combination. Produces prioritised, evidence-backed findings mapped to WCAG 2.2, Nielsen heuristics, Baymard research, Core Web Vitals, OWASP, Material Design, and Apple HIG.
+A comprehensive AI skill for automated UX auditing of any website, web app, or mobile app. Accepts a live URL, source code (frontend or full-stack), screenshots, or any combination. Produces prioritised, evidence-backed findings mapped to WCAG 2.2, Nielsen heuristics, Core Web Vitals, OWASP, Material Design, and Apple HIG.
 
 ---
 
@@ -41,7 +41,6 @@ ux-audit-skill/
 │   └── issue-entry.json             ← Structured issue ticket format
 │
 └── examples/
-    ├── ecommerce-checkout.md        ← Sample e-commerce audit
     ├── saas-dashboard.md            ← Sample SaaS dashboard audit
     └── mobile-pwa.md                ← Sample mobile PWA audit
 ```
@@ -56,7 +55,7 @@ ux-audit-skill/
 ```
 Audit this site: https://example.com
 Focus on: [accessibility / full / quick scan / specific section]
-Critical flows: [sign-in, checkout, onboarding, etc.]
+Critical flows: [sign-in, onboarding, billing, core task, etc.]
 ```
 
 **For a code audit:**
@@ -195,7 +194,7 @@ The `knowledge/` directory contains 12 curated reference files:
 | `01` | 99 UX rules with Do/Don't and severity ratings |
 | `02` | Priority quick reference — 10 categories ranked CRITICAL → LOW |
 | `03` | 67 UI styles — Best For, NOT For, style selection framework |
-| `04` | 161 industry-specific patterns (SaaS, Finance, Healthcare, E-commerce, etc.) |
+| `04` | 161 industry-specific patterns (SaaS, Finance, Healthcare, Government, etc.) |
 | `05` | Pre-delivery checklists (Web + App) and common anti-patterns |
 | `06` | Design system generation workflow |
 | `07` | Steve Krug behavioral UX methodology (Trunk Test, 3 Laws, Goodwill model) |
@@ -211,7 +210,6 @@ The `knowledge/` directory contains 12 curated reference files:
 
 - WCAG 2.2 (Level A, AA, AAA)
 - Nielsen's 10 Usability Heuristics
-- Baymard Institute research
 - Google Core Web Vitals (LCP / INP / CLS / TTFB)
 - OWASP ASVS + WSTG
 - Material Design 3
