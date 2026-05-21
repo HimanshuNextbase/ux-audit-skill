@@ -1,8 +1,5 @@
 # 67 UI Styles Guide
 
-Source: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
-Data: `src/ui-ux-pro-max/data/styles.csv`
-
 ---
 
 ## General Styles (49)

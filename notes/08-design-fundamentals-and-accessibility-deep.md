@@ -1,9 +1,5 @@
 # Design Fundamentals & Accessibility Deep Dive
 
-Source: https://wry-manatee-359.convex.site/api/v1/download?slug=ui-ux-design
-Files: UI_UX_MASTER_GUIDE.md, SKILL.md, references/ACCESSIBILITY.md, references/COMPONENTS.md
-Note: Duplicates from existing notes filtered out — only unique content saved here.
-
 ---
 
 ## Reading Patterns (New — not in prior notes)

@@ -1,8 +1,5 @@
 # Design System Generation Workflow
 
-Source: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
-Files: `skill-content.md`, `README.md`
-
 ---
 
 ## How the Design System Generator Works

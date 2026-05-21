@@ -1,9 +1,5 @@
 # Steve Krug UX Audit Methodology
 
-Source: https://wry-manatee-359.convex.site/api/v1/download?slug=steve-krug-ux-audit
-Book: *Don't Make Me Think, Revisited* (3rd Edition, 2014) — Steve Krug
-Author: Chris Couriard (skill)
-
 > This is a behavioral UX framework — how real users think and fail — complementing the technical/code rules in other notes.
 
 ---

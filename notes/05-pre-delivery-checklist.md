@@ -1,8 +1,5 @@
 # Pre-Delivery UI/UX Checklist
 
-Source: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
-Files: `skill-content.md`, `quick-reference.md`
-
 ---
 
 ## Quick Pre-Delivery Checks (Web)

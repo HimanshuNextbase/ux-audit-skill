@@ -1,8 +1,5 @@
 # 99 UX Guidelines (from ui-ux-pro-max-skill)
 
-Source: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
-Data: `src/ui-ux-pro-max/data/ux-guidelines.csv`
-
 ---
 
 ## Navigation (6 rules)

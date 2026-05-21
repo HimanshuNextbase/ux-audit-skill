@@ -1,8 +1,5 @@
 # Headway UX Audit Checklist & Report Framework
 
-Source: Headway (headway.io) — UX Audit: Create a Roadmap for Product Improvement (PDF)
-Note: Duplicates from notes 01–10 filtered out — only unique content saved here.
-
 ---
 
 ## Pre-Audit Setup (Before Any Checklist)

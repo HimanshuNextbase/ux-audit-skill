@@ -6,44 +6,19 @@ Building a UX audit AI skill for automated UX testing of any site or app.
 
 ## Notes (Processed & Organized)
 
-| File | Contents | Source |
-|------|----------|--------|
-| `notes/01-ux-guidelines-99-rules.md` | All 99 UX rules by category (Navigation, Animation, Layout, Touch, Interaction, Accessibility, Performance, Forms, Responsive, Typography, Feedback) with Do/Don't and severity | ui-ux-pro-max-skill |
-| `notes/02-priority-quick-reference.md` | 10 rule categories ranked by priority (CRITICAL → LOW) with full sub-rules per category | ui-ux-pro-max-skill |
-| `notes/03-ui-styles-67.md` | All 67 UI styles (General, Landing Page, Dashboard) with Best For, NOT For, and style selection framework | ui-ux-pro-max-skill |
-| `notes/04-industry-reasoning-rules.md` | 161 industry reasoning rules grouped by sector (SaaS, Finance, Healthcare, E-commerce, Services, Creative, Social, Education, Government, Emerging Tech) | ui-ux-pro-max-skill |
-| `notes/05-pre-delivery-checklist.md` | Pre-delivery checklists (Web + App), common UI anti-patterns, icon/layout/interaction issues | ui-ux-pro-max-skill |
-| `notes/06-design-system-workflow.md` | Full design system generation workflow, example output (Beauty Spa), when to use the skill, query strategy tips | ui-ux-pro-max-skill |
-| `notes/07-krug-ux-audit-methodology.md` | Steve Krug's behavioral UX audit: Trunk Test, 3 Laws, Billboard Design, Home Page 5 Questions, Goodwill Drains/Builders, Satisficing, Audit report template | steve-krug-ux-audit skill |
-| `notes/08-design-fundamentals-and-accessibility-deep.md` | Z/F reading patterns, Hick's Law, whitespace numbers, color scale 50–900, typography letter-spacing, CSS Grid vs Flexbox, WCAG POUR + levels, aria-live values, ARIA states/relationships, focus trapping, tabIndex rules, alt text rules, testing tools (axe/Lighthouse/WAVE), common gotchas, 5 Laws of Beautiful UI | ui-ux-design skill |
-| `notes/09-uxaudit-framework-and-checks.md` | Full testing stack pyramid, UX layers (usability/desirability/retention), 4 lenses (understand/decide/act/recover), 17 AI-slop checks, Cooper's excise catalog, 4-axis journey evaluation, delight signals, Norman's 3 emotional layers, JTBD framework, journey scenario floors by product type, cold/returning/power-user modes, category friction red flags, source citation discipline | gotalab/uxaudit |
-| `notes/10-hallmark-anti-slop-design.md` | Pre-emit self-critique (6 axes: Philosophy/Hierarchy/Execution/Specificity/Restraint/Variety), 21 named macrostructures, SaaS page sequence, 50+ anti-patterns by severity (Critical/Major/Microinteraction/Minor), 8-state interactive element requirement, hit-target expansion via ::before, tooltip timing split (hover 800ms vs focus 0ms), focus ring instant-appearance rule, icon library defaults by project type | Nutlope/hallmark |
-| `notes/11-headway-ux-audit-checklist.md` | Pre-audit setup (define goals + personas + KPIs + watch sessions first), 5-category heuristic checklist (Content/Design+Typography/Navigation/Accessibility/Mobile), 5-section report format (Executive Summary/Key Findings/Interview Quotes/Major Callouts/Roadmap), loader with remaining-time hint rule, progress indicator requirements, auth/login complete checklist, mobile-specific checks, 3 new audit tools (Contrast/Stark/Coblis), micro-audit cadence | Headway PDF |
-
-## Raw (Original Source Content)
-
 | File | Contents |
 |------|----------|
-| `raw/source-readme.md` | Original README summary + file map + installation |
-
-## Merged (To Be Built)
-
-- `merged/ux-audit-master.md` — Final merged UX audit skill (TODO)
-
----
-
-## Sources Processed
-
-1. ✅ https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
-2. ✅ https://wry-manatee-359.convex.site/api/v1/download?slug=steve-krug-ux-audit
-3. ✅ https://wry-manatee-359.convex.site/api/v1/download?slug=ui-ux-design
-4. ✅ https://github.com/gotalab/uxaudit
-5. ✅ https://github.com/Nutlope/hallmark
-6. ✅ https://511701.fs1.hubspotusercontent-na1.net/hubfs/511701/UX%20Audits%20Campaign/UX%20Audit%20-%20Create%20a%20Roadmap%20for%20Product%20Improvement.pdf (Headway PDF)
-
-## Sources Pending
-
-_(add links here as you share them)_
+| `notes/01-ux-guidelines-99-rules.md` | All 99 UX rules by category (Navigation, Animation, Layout, Touch, Interaction, Accessibility, Performance, Forms, Responsive, Typography, Feedback) with Do/Don't and severity |
+| `notes/02-priority-quick-reference.md` | 10 rule categories ranked by priority (CRITICAL → LOW) with full sub-rules per category |
+| `notes/03-ui-styles-67.md` | All 67 UI styles (General, Landing Page, Dashboard) with Best For, NOT For, and style selection framework |
+| `notes/04-industry-reasoning-rules.md` | 161 industry reasoning rules grouped by sector (SaaS, Finance, Healthcare, E-commerce, Services, Creative, Social, Education, Government, Emerging Tech) |
+| `notes/05-pre-delivery-checklist.md` | Pre-delivery checklists (Web + App), common UI anti-patterns, icon/layout/interaction issues |
+| `notes/06-design-system-workflow.md` | Full design system generation workflow, example output (Beauty Spa), when to use the skill, query strategy tips |
+| `notes/07-krug-ux-audit-methodology.md` | Steve Krug's behavioral UX audit: Trunk Test, 3 Laws, Billboard Design, Home Page 5 Questions, Goodwill Drains/Builders, Satisficing, Audit report template |
+| `notes/08-design-fundamentals-and-accessibility-deep.md` | Z/F reading patterns, Hick's Law, whitespace numbers, color scale 50–900, typography letter-spacing, CSS Grid vs Flexbox, WCAG POUR + levels, aria-live values, ARIA states/relationships, focus trapping, tabIndex rules, alt text rules, testing tools (axe/Lighthouse/WAVE), common gotchas, 5 Laws of Beautiful UI |
+| `notes/09-uxaudit-framework-and-checks.md` | Full testing stack pyramid, UX layers (usability/desirability/retention), 4 lenses (understand/decide/act/recover), 17 AI-slop checks, Cooper's excise catalog, 4-axis journey evaluation, delight signals, Norman's 3 emotional layers, JTBD framework, journey scenario floors by product type, cold/returning/power-user modes, category friction red flags |
+| `notes/10-hallmark-anti-slop-design.md` | Pre-emit self-critique (6 axes: Philosophy/Hierarchy/Execution/Specificity/Restraint/Variety), 21 named macrostructures, SaaS page sequence, 50+ anti-patterns by severity (Critical/Major/Microinteraction/Minor), 8-state interactive element requirement, hit-target expansion via ::before, tooltip timing split (hover 800ms vs focus 0ms), focus ring instant-appearance rule, icon library defaults by project type |
+| `notes/11-headway-ux-audit-checklist.md` | Pre-audit setup (define goals + personas + KPIs + watch sessions first), 5-category heuristic checklist (Content/Design+Typography/Navigation/Accessibility/Mobile), 5-section report format (Executive Summary/Key Findings/Interview Quotes/Major Callouts/Roadmap), loader with remaining-time hint rule, progress indicator requirements, auth/login complete checklist, mobile-specific checks, 3 new audit tools (Contrast/Stark/Coblis), micro-audit cadence |
 
 ---
 

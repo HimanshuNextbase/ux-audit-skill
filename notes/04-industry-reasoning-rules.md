@@ -1,8 +1,5 @@
 # 161 Industry-Specific UI/UX Reasoning Rules
 
-Source: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
-Data: `src/ui-ux-pro-max/data/ui-reasoning.csv`
-
 Format: Industry → Recommended Pattern → Style Priority → Color Mood → Key Effects → Anti-Patterns
 
 ---

@@ -1,10 +1,5 @@
 # uxaudit — UX Regression Testing Framework
 
-Source: https://github.com/gotalab/uxaudit
-License: Apache 2.0
-Status: Experimental / Alpha
-Note: All duplicates with notes 01–08 filtered out — only unique content here.
-
 > Every check cites a published source (WCAG 2.2, NN/g, Nielsen, Krug, Baymard, ISO 9241). No vibes.
 
 ---

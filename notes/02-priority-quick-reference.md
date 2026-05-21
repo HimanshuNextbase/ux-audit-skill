@@ -1,8 +1,5 @@
 # Priority Quick Reference — UX Rule Categories
 
-Source: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
-Files: `SKILL.md`, `quick-reference.md`
-
 ---
 
 ## Rule Priority Table

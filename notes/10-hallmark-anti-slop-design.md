@@ -1,9 +1,5 @@
 # Hallmark: Anti-Slop Design System
 
-Source: https://github.com/Nutlope/hallmark
-Files: references/slop-test.md, references/anti-patterns.md, references/macrostructures.md, references/interaction-and-states.md
-Note: Duplicates from notes 01–09 filtered out — only unique content saved here.
-
 ---
 
 ## Pre-Emit Self-Critique (Before Any Gate Sweep)
