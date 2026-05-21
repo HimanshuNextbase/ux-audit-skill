@@ -19,6 +19,7 @@ Building a UX audit AI skill for automated UX testing of any site or app.
 | `notes/09-uxaudit-framework-and-checks.md` | Full testing stack pyramid, UX layers (usability/desirability/retention), 4 lenses (understand/decide/act/recover), 17 AI-slop checks, Cooper's excise catalog, 4-axis journey evaluation, delight signals, Norman's 3 emotional layers, JTBD framework, journey scenario floors by product type, cold/returning/power-user modes, category friction red flags |
 | `notes/10-hallmark-anti-slop-design.md` | Pre-emit self-critique (6 axes: Philosophy/Hierarchy/Execution/Specificity/Restraint/Variety), 21 named macrostructures, SaaS page sequence, 50+ anti-patterns by severity (Critical/Major/Microinteraction/Minor), 8-state interactive element requirement, hit-target expansion via ::before, tooltip timing split (hover 800ms vs focus 0ms), focus ring instant-appearance rule, icon library defaults by project type |
 | `notes/11-headway-ux-audit-checklist.md` | Pre-audit setup (define goals + personas + KPIs + watch sessions first), 5-category heuristic checklist (Content/Design+Typography/Navigation/Accessibility/Mobile), 5-section report format (Executive Summary/Key Findings/Interview Quotes/Major Callouts/Roadmap), loader with remaining-time hint rule, progress indicator requirements, auth/login complete checklist, mobile-specific checks, 3 new audit tools (Contrast/Stark/Coblis), micro-audit cadence |
+| `notes/12-comprehensive-audit-framework.md` | Two-lane audit model (URL-first vs code-first), input mode capability matrix (5 modes), canonical standards map (11 layers), 8-stage audit pipeline, 9-code issue taxonomy with priority tendency, 5-factor severity scoring rubric (0–20) + P0–P3 bands + override rule, reproducible test defaults, 16-test checklist matrix, full tool stack (13 open-source + 5 commercial), 13-metric MVS with CWV thresholds (LCP/INP/CLS/TTFB), automation snippets (LHCI/Playwright+axe/Pa11y CI/Puppeteer/GitHub Actions), issue entry template, remediation plan template, 4 report types, sample before/after audits (e-commerce/SaaS/PWA), service tier model |
 
 ---
 
@@ -72,3 +73,11 @@ Building a UX audit AI skill for automated UX testing of any site or app.
 16. **Major Callout format:** Each audit issue needs 3 things: screenshot + explainer of why it's a problem + plan to address it.
 
 17. **5-section audit report:** Executive Summary → Key Findings (3–5) → Interview Quotes → Major Callouts → Roadmap (sprint backlog or larger conversation).
+
+18. **Two-lane model:** URL-first (rendered experience) + code-first (shift-left prevention). Strongest audits use both — URL shows what users experience now, code shows what teams can prevent next.
+
+19. **Severity scoring:** 5 factors × 0–4 = 0–20 score. P0=17-20 (or override), P1=13-16, P2=8-12, P3=1-7. Override to P0 anytime an issue blocks checkout, sign-in, payment, legal consent, or keyboard-only completion.
+
+20. **CWV thresholds:** LCP ≤ 2.5s, INP ≤ 200ms, CLS ≤ 0.1, TTFB ≤ 800ms. Keyboard completion rate = 100% on critical flows.
+
+21. **New tools:** Pa11y/Pa11y CI (CLI a11y sweeps), OWASP ZAP (security baseline), MDN HTTP Observatory (header hygiene), CrUX (real-user field data), eslint-plugin-jsx-a11y (React static linting), Storybook addon-a11y (component-level), Accessibility Insights for Web (guided manual review).
