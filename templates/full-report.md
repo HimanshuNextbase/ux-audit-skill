@@ -63,6 +63,7 @@ Score each audited journey on 4 axes. A single fail on any axis fails the journe
   - Copy issue → before/after copy rewrite
   - Structural issue → plain description of the structural change
   - Design constraint → the specific rule + implementation hint
+- **Screenshot:** `~/audits/screenshots/[slug]-[ID].png` (P0/P1 with URL) or `N/A` (P2/P3 or code-only)
 - **Evidence:** [Screenshot ref / page URL / element selector / file:line]
 
 ---

@@ -208,16 +208,38 @@ Work through every Lane A category in system.md Step 2:
 
 Then run the anti-slop check from system.md Step 3.
 
+**Screenshot evidence (URL audits only):** For every P0 and P1 finding, capture an annotated screenshot:
+1. Navigate to the page containing the issue
+2. Inject this JS to highlight the specific element (adapt selector):
+   ```js
+   (() => {
+     const el = document.querySelector('[YOUR_SELECTOR]');
+     if (!el) return;
+     el.scrollIntoView({block:'center', behavior:'instant'});
+     el.style.outline = '4px solid #FF3B30';
+     el.style.outlineOffset = '3px';
+     const badge = document.createElement('div');
+     badge.textContent = 'FINDING_ID';
+     badge.style.cssText = 'position:fixed;top:12px;right:12px;background:#FF3B30;color:#fff;padding:4px 10px;font:bold 13px monospace;border-radius:4px;z-index:999999;';
+     document.body.appendChild(badge);
+   })();
+   ```
+3. Take a screenshot and save to `~/audits/screenshots/[slug]-[FINDING_ID].png`
+4. Reference the path in the finding's Screenshot field
+
+For P2/P3 or screenshot-only audits: skip annotation, note "screenshot: N/A (no URL)" instead.
+
 Output format — return a structured finding list only (no full report):
   [CODE-NNN] Title
   - Score: [0-20] (UI:[0-4], Biz:[0-4], Reach:[0-4], Rec:[0-4], Comp:[0-4])
   - Priority: P[0-3]
   - Evidence: [specific page/element/screenshot ref]
+  - Screenshot: ~/audits/screenshots/[slug]-[CODE-NNN].png (or "N/A — no URL / P2+")
   - Fix: [one sentence — what to change and why]
   - Implementation: [developer-ready detail — see types below]
   - Standard: [WCAG SC / Nielsen heuristic / etc.]
 
-Implementation field by issue type — always include one of:
+Implementation field — MANDATORY on every single finding, no exceptions:
   • Code issue (A11Y, VISUAL, MOBILE, PERF, FORM, AUTH): before/after code snippet
     Before: <button onclick="...">X</button>
     After:  <button aria-label="Close dialog" onclick="...">X</button>
@@ -226,11 +248,12 @@ Implementation field by issue type — always include one of:
     After:  "Create your account"
   • Structural issue (IA, FLOW, EXCISE, NOTIFY): plain description of the structural change
     "Collapse the 4-screen wizard into a single form. Fields needed: email + password only."
-  • Backend issue (Lane C): corrected response shape or endpoint pattern
-    Before: HTTP 500 { "error": "NullPointerException" }
-    After:  HTTP 422 { "message": "Email already in use", "field": "email" }
-  If the fix is a design decision with no single correct implementation, describe the
-  constraint ("touch target must be ≥ 44×44 CSS px — expand via ::before overlay").
+  • Design constraint: the rule + implementation hint
+    "Touch target must be ≥ 44×44 CSS px — expand via ::before pseudo-element overlay, no visual change needed."
+  If the exact implementation is uncertain, give your best recommendation and flag it:
+    "Recommended: [approach]. Verify with engineering — depends on component library."
+
+RULE: A finding without an Implementation is incomplete. Do not submit until every finding has one.
 
 Also return:
   - Journey scores table (4-axis per journey + TTFV)

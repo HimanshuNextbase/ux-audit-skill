@@ -48,6 +48,22 @@ Check for the most common AI-generated tells:
 - No horizontal scroll?
 - Touch targets obviously large enough?
 
+### 6. Screenshot Capture (URL audits only)
+For every issue rated P1 or higher: inject the annotation snippet, screenshot the highlighted element, save to `~/audits/screenshots/[slug]-[CODE-NNN].png`.
+```js
+(() => {
+  const el = document.querySelector('[SELECTOR]');
+  if (!el) return;
+  el.scrollIntoView({block:'center', behavior:'instant'});
+  el.style.outline = '4px solid #FF3B30';
+  el.style.outlineOffset = '3px';
+  const badge = document.createElement('div');
+  badge.textContent = 'FINDING_ID';
+  badge.style.cssText = 'position:fixed;top:12px;right:12px;background:#FF3B30;color:#fff;padding:4px 10px;font:bold 13px monospace;border-radius:4px;z-index:999999;';
+  document.body.appendChild(badge);
+})();
+```
+
 ## Quick Scan Output Format
 
 ```
@@ -60,9 +76,9 @@ Check for the most common AI-generated tells:
 [Table with ✅/⚠️/❌ for each question]
 
 ### Top Issues (up to 10)
-| # | Issue | Category | Estimated Priority |
-|---|-------|----------|-------------------|
-| 1 | ... | A11Y | P1 |
+| # | Issue | Category | Priority | Fix | Screenshot |
+|---|-------|----------|----------|-----|------------|
+| 1 | ... | A11Y | P1 | [one-sentence fix] | `~/audits/screenshots/[slug]-A11Y-001.png` or N/A |
 ...
 
 ### AI-Slop Flags
