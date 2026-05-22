@@ -732,6 +732,55 @@ Use the appropriate template:
 
 ---
 
+## Step 6 — Save the Audit (Always, After Every Audit)
+
+Two things happen after every completed audit, regardless of scope or audience.
+
+### 6.1 — Export the report to a local file
+
+Save the final report to `~/audits/` so it is readable outside the agent:
+
+```
+~/audits/[product-slug]-[YYYY-MM-DD].md
+```
+
+Create the directory if it doesn't exist. Write the full report as rendered Markdown. If the user requested issue-entry tickets, also write them to `~/audits/[product-slug]-[YYYY-MM-DD]-issues.json`.
+
+Confirm the save path in your closing message: *"Report saved to ~/audits/acme-2026-05-22.md"*
+
+### 6.2 — Save patterns to memory
+
+After saving the report, call the `memory` tool to record what surprised you or what generalises beyond this audit. Save to target `memory` (your personal notes), not `user`.
+
+**Save if any of these are true:**
+- A recurring pattern appeared in ≥ 2 journeys or ≥ 3 findings — save it as a named pattern
+- An industry-specific anti-pattern was confirmed (e.g., SaaS billing pages consistently lack TTFV signals)
+- A checklist item consistently produced no findings — note it as low-yield for this product type
+- A checklist item was missing and should be added — save as a suggested skill improvement
+- A heuristic produced a false positive — save the exception so future audits don't repeat it
+
+**Format for memory entries:**
+```
+Pattern: [product-type] [issue area] — [pattern observed]
+Evidence: [product slug], [date], [finding count]
+Implication: [what this means for future audits of this type]
+```
+
+**Do NOT save:**
+- The full audit report or issue list (that's in the file and state.db)
+- Product-specific implementation details (those don't generalise)
+- Things already in the checklists
+
+### 6.3 — Suggest skill improvements (optional, only if genuinely warranted)
+
+If you found that a checklist item is consistently wrong, outdated, or missing, explicitly tell the user at the end of the audit:
+
+> "I noticed [specific gap] — this checklist item may need updating. Want me to patch the skill?"
+
+If the user confirms, use `skill_manager` to patch the relevant file (`checklists/site.md`, `checklists/app.md`, or `prompts/system.md`). Do NOT self-patch without confirmation.
+
+---
+
 ## Issue Taxonomy Reference
 
 | Code | Priority tendency | What it covers |
