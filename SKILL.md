@@ -65,11 +65,10 @@ Then follow **Step 0 in that file**. It covers:
 ### Step 1 — Choose Audit Mode
 
 **Full audit** (recommended for any serious review):
-- Load the full system prompt: `skill_view("ux-audit", "prompts/system.md")`
 - Load the relevant checklist:
   - Website / web app → `skill_view("ux-audit", "checklists/site.md")`
   - Mobile app / PWA → `skill_view("ux-audit", "checklists/app.md")`
-- Load one, not both.
+- Load one checklist per surface. For a product that genuinely spans both surfaces (e.g., a PWA with a full web app), load both.
 
 **Quick scan** (top 10 issues, < 10 min):
 - Load: `skill_view("ux-audit", "prompts/quick-scan.md")`
@@ -110,7 +109,7 @@ Load these on demand — only when needed for the specific audit:
 
 | File | When to load |
 |------|-------------|
-| `prompts/system.md` | Full 8-step audit pipeline — always load for a full audit |
+| `prompts/system.md` | Full audit pipeline (Steps 0–5) — always load for a full audit |
 | `prompts/quick-scan.md` | Quick scan mode (5 checks, top 10 issues) |
 | `checklists/site.md` | Website / web app audit — self-contained with scoring |
 | `checklists/app.md` | Mobile app / PWA audit — self-contained with scoring |
@@ -171,7 +170,7 @@ WCAG 2.2 (A/AA/AAA) · Nielsen 10 Heuristics · Google Core Web Vitals · OWASP 
 ## Pitfalls
 
 - Never start auditing before Step 0 — product type and user journeys determine which issues matter
-- Load only one checklist (site.md OR app.md), never both
+- Load one checklist per surface — load both only for products that genuinely span both (PWA + full web app)
 - Load knowledge files selectively — only when deeper reference is needed on a specific topic
 - Every finding must have: taxonomy code, priority band, score breakdown, affected flows, fix recommendation, standards citation
 - Anti-slop detection is mandatory — check for AI-generated UI fingerprints (The AI nav, gradient headline, 3-column feature grid, etc.)

@@ -56,7 +56,7 @@ Score each audited journey on 4 axes. A single fail on any axis fails the journe
 **IA-001: [Title]**
 - **What:** [Specific description of the issue on the specific page/element]
 - **Why it matters:** [User impact + business impact]
-- **Standard violated:** [WCAG criterion / Nielsen heuristic / Baymard finding / etc.]
+- **Standard violated:** [WCAG criterion / Nielsen heuristic / Cooper / Krug / Norman / etc.]
 - **Fix:** [Specific, actionable recommendation]
 - **Evidence:** [Screenshot ref / page URL / element selector]
 
@@ -72,7 +72,15 @@ Score each audited journey on 4 axes. A single fail on any axis fails the journe
 
 ---
 
+### AUTH — Login & Registration
+
+---
+
 ### A11Y — Accessibility
+
+---
+
+### VISUAL — Design & Interaction
 
 ---
 
@@ -90,6 +98,31 @@ Score each audited journey on 4 axes. A single fail on any axis fails the journe
 | INP | [value] | ✅ ≤ 200ms / ⚠️ / ❌ |
 | CLS | [value] | ✅ ≤ 0.1 / ⚠️ / ❌ |
 | TTFB | [value] | ✅ ≤ 800ms / ⚠️ / ❌ |
+
+---
+
+### FLOW — Journey Evaluation
+
+| Journey | value_delivery | task_completion | operating_cost | feedback_quality | TTFV |
+|---------|---------------|-----------------|---------------|-----------------|------|
+| [Journey name] | ✅/⚠️/❌ | ✅/⚠️/❌ | ✅/⚠️/❌ | ✅/⚠️/❌ | [# clicks] |
+
+**"What if" failures tested:** [list]
+**"3 Days Later" check:** ✅/❌ — [finding]
+
+---
+
+### EXCISE — Friction Accounting
+
+[List Cooper friction patterns observed. If none: "No unintentional friction patterns detected."]
+
+---
+
+### NOTIFY — Async UX
+
+**Proactive notification:** ✅/❌ — [finding]
+**Background task feedback:** ✅/❌ — [finding]
+**Async button behavior:** ✅/❌ — [finding]
 
 ---
 

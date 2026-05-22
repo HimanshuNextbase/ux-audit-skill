@@ -1,7 +1,7 @@
 {
   "id": "CATEGORY-###",
   "title": "Short, specific title describing the problem",
-  "category": "IA | CONTENT | FORM | A11Y | MOBILE | PERF | SEO | TRUST | PWA",
+  "category": "IA | CONTENT | FORM | AUTH | A11Y | VISUAL | MOBILE | PERF | SEO | TRUST | PWA | FLOW | EXCISE | GOODWILL | DELIGHT | NOTIFY | VOICE | AI-SLOP",
   "priority": "P0 | P1 | P2 | P3",
   "severity_score": 0,
   "severity_breakdown": {

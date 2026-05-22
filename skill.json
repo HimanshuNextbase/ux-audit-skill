@@ -1,6 +1,6 @@
 {
   "name": "ux-audit",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "skill",
   "description": "Systematic UX audit skill for websites, web apps, and mobile apps. Accepts a live URL, source code, or screenshots. Produces prioritised, evidence-backed findings with severity scores, standards citations, and fix recommendations.",
   "author": "HimanshuNextbase",
@@ -28,8 +28,10 @@
     "live-url",
     "url-with-credentials",
     "frontend-repo",
+    "backend-code",
     "fullstack-repo",
     "screenshots",
+    "spec-document",
     "combined"
   ],
   "output_types": [
