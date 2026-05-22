@@ -197,22 +197,33 @@ Load these skill files in order:
   skill_view("ux-audit", "checklists/site.md")         # or app.md per product type
 
 **Step 0: URL Acquisition — do this first, before any auditing**
-A live URL may or may not have been provided. Handle every case:
-1. If a URL was provided in context → use it directly.
-2. If no URL was provided → discover it from the code:
-   a. Search these files for a deployed URL: README.md, package.json (`homepage` field),
-      vercel.json, netlify.toml, wrangler.toml, fly.toml, .env.example, app.config.ts/js,
-      .github/workflows/*.yml (look for any `https://` deploy target or preview URL).
-   b. If found → use that URL for all browser checks.
-   c. If not found → run the app locally:
-      - Detect package manager: pnpm-lock.yaml → pnpm | yarn.lock → yarn | bun.lockb → bun | else npm
-      - Install: `[pm] install`
-      - Start: `[pm] run dev` (check package.json `scripts` for alternatives: start, serve, preview)
-      - Watch terminal output for the ready URL — look for "Local:", "listening on", "ready on http://"
-      - Use that localhost URL for all browser checks and screenshots.
-   d. If none of the above works (pure API/backend repo, build error, or no web entry point):
-      → Skip browser-based checks. Note "Rendered view unavailable — code analysis only" at the
-        top of findings. Do not skip — proceed with whatever code analysis is possible.
+
+The goal is always to get a rendered, screenshottable URL. Prefer this order:
+
+**Case 1 — URL was provided in context:**
+Use it directly. If it returns a login page and no credentials were provided, ask the user for credentials before taking any screenshots.
+
+**Case 2 — Frontend or full-stack code was provided (no URL):**
+Run it locally. A locally running app is ALWAYS screenshottable regardless of whether the deployed version is private or behind auth. Dev mode usually bypasses auth or shows the full UI shell.
+
+Steps to run locally:
+1. Check for `.env.example` or `.env.local.example` — if found, copy to `.env` / `.env.local` so the app starts without crashing on missing env vars. Dummy values are fine — the UI just needs to render.
+2. Detect package manager: pnpm-lock.yaml → pnpm | yarn.lock → yarn | bun.lockb → bun | else npm
+3. Run `[pm] install` (skip if node_modules already exists)
+4. Run `[pm] run dev` — if that fails, try `start`, `serve`, `preview` (check package.json scripts)
+5. Watch terminal output for the ready URL: look for "Local:", "listening on", "ready on http://", "localhost:"
+6. Use that localhost URL for all browser checks and screenshots.
+
+If the dev server exits with an error:
+- Check the error. Missing env var? Add a dummy value to .env and retry.
+- Port conflict? Kill the conflicting process (`lsof -ti:3000 | xargs kill`) and retry.
+- Build error? Note the error but still try `[pm] run build && [pm] run preview` as fallback.
+
+**Case 3 — Only a URL exists in the codebase (no runnable frontend):**
+Search README.md, package.json (`homepage`), vercel.json, netlify.toml, wrangler.toml, fly.toml, .github/workflows/*.yml for a deployed URL and use it.
+
+**Case 4 — Pure backend/API only (no web entry point anywhere):**
+Skip browser checks. Note "Rendered view unavailable — backend-only code" at top of findings. Do not skip the rest of the audit.
 
 Work through every Lane A category in system.md Step 2:
   IA, CONTENT, FORM, AUTH, A11Y, VISUAL, MOBILE, PERF,
@@ -226,9 +237,15 @@ Work through every Lane A category in system.md Step 2:
 
 Then run the anti-slop check from system.md Step 3.
 
-**Screenshot evidence (URL audits only):** For every P0 and P1 finding, capture an annotated screenshot:
-1. Navigate to the page containing the issue
-2. Inject this JS to highlight the specific element (adapt selector):
+**Screenshot evidence — MANDATORY for every P0/P1 finding when a URL is available:**
+
+CRITICAL RULE: Screenshots must ALWAYS be of the live web app or running app UI — never of audit reports, markdown files, terminal output, or any document. A screenshot of text is useless. The screenshot must show the actual broken UI element in its real context.
+
+For every P0 and P1 finding:
+1. Open the browser and navigate to the EXACT page where the issue exists (not the audit report, not a file, the actual app URL/localhost)
+2. If the app requires login — stop and ask the user for credentials before proceeding. Do not skip or screenshot a login wall.
+3. Scroll to and visually locate the specific broken element on the page
+4. Inject this JS to mark the element with a red outline and finding ID badge:
    ```js
    (() => {
      const el = document.querySelector('[YOUR_SELECTOR]');
@@ -242,10 +259,12 @@ Then run the anti-slop check from system.md Step 3.
      document.body.appendChild(badge);
    })();
    ```
-3. Take a screenshot and save to `~/audits/screenshots/[slug]-[FINDING_ID].png`
-4. Reference the path in the finding's Screenshot field
+5. Take a screenshot of the browser viewport (the live page with the highlighted element visible)
+6. Save to `~/audits/screenshots/[slug]-[FINDING_ID].png`
+7. Reference the saved path in the finding's Screenshot field
 
-For P2/P3 or screenshot-only audits: skip annotation, note "screenshot: N/A (no URL)" instead.
+For P2/P3: skip annotation. Note "Screenshot: N/A — P2/P3".
+If app requires auth and no credentials provided: note "Screenshot: N/A — requires login credentials".
 
 Output format — return a structured finding list only (no full report):
   [CODE-NNN] Title
