@@ -79,6 +79,12 @@ Before scoring issues, map the product:
 - Identify: home, primary task flow, auth flow, empty states, error states, mobile view
 - Note the industry/product type — this determines which industry-specific anti-patterns to watch for (see knowledge/04)
 
+**If auditing from a spec or requirements document (before UI exists), run a spec-level check first:**
+- Are there missing screens for key user journeys? (onboarding, search results, processing progress, error recovery)
+- Does any single screen try to do too much? (split candidates: settings mixing preferences + account management)
+- Is the navigation model clear — where are the entry points, and does every screen have a graceful exit?
+- Does each screen serve one clear purpose for one clearly defined user goal?
+
 ---
 
 ## Step 2 — Run the Two-Lane Audit
@@ -290,6 +296,8 @@ Any axis scoring < 3 = flag as AI-slop risk.
 - `loading="lazy"` on the hero/LCP image
 - Re-drawn UI chrome (fake browser bar or phone frame in HTML/CSS)
 - Lottie community animation (someone else's work)
+- AI-generated photography: people/places imagery with six fingers, melted text, or uncanny facial smoothness
+- No signature design element: every screen could belong to any other SaaS (fails the "which product is this?" test)
 
 ---
 

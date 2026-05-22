@@ -41,6 +41,7 @@ Test on real device or accurate emulation at 390×844 (iPhone 14) and 360×800 (
 - [ ] Current page / section is always clear
 - [ ] Progress indicator present for multi-step flows — shows position AND steps remaining
 - [ ] Footer / overflow menus contain secondary navigation, not primary actions
+- [ ] Sub-page screens replace the bottom tab bar with a back button + page title in the header — global nav does not persist inside deep sub-flows
 
 ---
 
@@ -56,6 +57,8 @@ Test on real device or accurate emulation at 390×844 (iPhone 14) and 360×800 (
 - [ ] Gesture-based actions have a visible affordance or discoverable entry point
 - [ ] Pull-to-refresh present where content can be updated
 - [ ] Swipe to go back works on iOS (when using native navigation)
+- [ ] Horizontal swipeable content (carousels, galleries) does not conflict with the system back gesture (iOS edge swipe / Android gesture navigation)
+- [ ] Haptic feedback used for destructive actions, toggles, and confirmations where platform supports it
 
 ---
 
@@ -122,6 +125,16 @@ Test on real device or accurate emulation at 390×844 (iPhone 14) and 360×800 (
 - [ ] Text on images is readable (sufficient contrast + not relying on image for legibility)
 - [ ] Icon set is consistent — one library across the app, no mixing styles
 - [ ] All icons represent what they actually do (no generic icons for specific actions)
+- [ ] Body text line-height ≥ 1.4× font size — dense 1.0–1.2 line-height fails readability
+- [ ] Overflowing text is truncated with ellipsis — not abruptly clipped; full text accessible on tap or expand
+- [ ] Numeric data in tables, prices, and counters uses tabular-width figures so digits align vertically
+- [ ] Maximum 5–6 distinct colours in the palette — no one-off per-screen colours that don't exist elsewhere
+- [ ] Single primary accent colour for interactive elements — no competing saturated highlights scattered across the app
+- [ ] Semantic colour rule applied consistently: red = destructive/error, green = success, amber = warning, blue = info
+- [ ] Neutral palette uses consistent temperature — all warm grays or all cool grays (no mixing beige with blue-gray)
+- [ ] Border-radius values consistent throughout — cards, sheets, and buttons use the same defined set of radii
+- [ ] Micro-animations use consistent easing and duration (150–300ms) — no jarring timing differences between screens
+- [ ] Terminology is consistent: the same action uses the same word everywhere (not "Delete" on one screen and "Remove" on another)
 
 ---
 
@@ -150,6 +163,10 @@ Every interactive element must have all 8 states:
 - [ ] After an error, user can return to exact error point without losing progress
 - [ ] Network errors are clearly communicated with a retry option
 - [ ] All async operations have a visible loading state
+- [ ] Async action buttons show a loading spinner and disable themselves to prevent duplicate submissions
+- [ ] Quick actions (toggle, save, reaction) update UI optimistically without waiting for server response — failures revert with explanation
+- [ ] Long-running requests > 10s show a progress indicator or allow cancellation — app never appears frozen with no feedback
+- [ ] Session expiry during active use is communicated — user redirected to sign-in, not shown a broken UI or cryptic API error
 
 ---
 
@@ -190,6 +207,10 @@ Every interactive element must have all 8 states:
 - [ ] Important elements reachable in both orientations
 - [ ] No content cut off or inaccessible in landscape mode
 - [ ] Design matches screenshots in the app store / Play Store
+- [ ] Content respects safe areas — nothing rendered behind notch, Dynamic Island, status bar, or home indicator
+- [ ] First scrollable item is fully visible below the header — content doesn't start hidden behind a transparent overlapping header
+- [ ] Scrollable content has sufficient bottom padding to clear the tab bar so the last item is fully visible
+- [ ] On editor, canvas, or media screens the content area occupies ≥ 75% of viewport height — chrome (toolbars, headers) is minimal
 
 ---
 
@@ -256,6 +277,7 @@ Flag any of the following:
 - [ ] Re-drawn device chrome (fake iOS status bar or phone frame in UI)
 - [ ] `loading="lazy"` on above-fold / LCP images
 - [ ] Sound-on autoplay (video/audio without `muted` attribute)
+- [ ] AI-generated photography — people/places imagery shows six fingers, melted text, or uncanny smoothness
 
 **Major:**
 - [ ] Universal `hover:scale-105` on all list items (applies to pointer interactions)
@@ -265,6 +287,7 @@ Flag any of the following:
 - [ ] Auto-rotating carousel with no pause control
 - [ ] Bounce / elastic easing on UI controls
 - [ ] Animate-on-scroll on every list item
+- [ ] No signature design element — UI is indistinguishable from generic template output (no unique colour, shape language, or interaction pattern)
 
 ---
 

@@ -91,6 +91,16 @@ Drop onto the page cold. Answer each question in under 2 seconds:
 - [ ] Illustrations and images look like they belong to this product (brand match)
 - [ ] No text embedded in images or illustrations
 - [ ] Icon set is consistent — one library per project, no mixing
+- [ ] Body text line-height ≥ 1.4× font size — dense 1.0–1.2 line-height fails readability
+- [ ] Overflowing text is truncated with ellipsis — not abruptly clipped; full content accessible on hover or expand
+- [ ] Numeric data in tables and data displays uses tabular-width figures so digits align vertically
+- [ ] Single primary accent colour — no competing saturated highlights scattered through the page
+- [ ] Semantic colours applied consistently: red = destructive/error, green = success, amber = warning, blue = info
+- [ ] Neutral palette uses consistent temperature — all warm or all cool grays (no mixing beige background with blue-gray text)
+- [ ] Maximum 5–6 colours in the full palette — no one-off per-page colours
+- [ ] Consistent border-radius values across all components — no mixing 4px cards next to 16px modals
+- [ ] Micro-animations use consistent easing and duration across all pages — no jarring timing variation between sections
+- [ ] Terminology consistent: the same concept uses the same word everywhere ("Settings" not "Preferences" on another page; "Delete" not "Remove")
 
 ---
 
@@ -121,6 +131,10 @@ Every interactive element must have all 8 states:
 - [ ] Errors: user can return to exact error point without losing progress
 - [ ] Confirmation on form submission is visually distinct
 - [ ] After an error, users can restart the process OR return to the error without losing progress
+- [ ] Async action buttons show a loading spinner and disable themselves to prevent duplicate submissions
+- [ ] Quick actions (toggle, like, save) update UI optimistically without waiting for server response — failures revert with explanation
+- [ ] Long-running requests > 10s show a progress indicator or allow cancellation — page never appears frozen with no feedback
+- [ ] Session expiry during active use is communicated — user redirected to sign-in, not shown a broken page or cryptic API error
 
 ---
 
@@ -268,6 +282,7 @@ Flag any of the following:
 - [ ] Aurora-blob or floating-orb background decorations
 - [ ] Re-drawn UI chrome (fake browser bar or phone frame in HTML/CSS)
 - [ ] `loading="lazy"` on the hero / LCP image
+- [ ] AI-generated photography — people/places imagery shows six fingers, melted text, or uncanny smoothness
 
 **Major — looks AI-generated:**
 - [ ] `transition-all` instead of specific properties
@@ -279,6 +294,7 @@ Flag any of the following:
 - [ ] Confirmation dialog for a reversible action
 - [ ] Auto-rotating carousel with no pause control
 - [ ] Animate-on-scroll on every section
+- [ ] No signature design element — site is indistinguishable from generic template output (no unique colour, shape language, or interaction pattern specific to this product)
 
 ---
 
