@@ -77,12 +77,14 @@ Then follow **Step 0 in that file**. It covers:
 
 ### Step 1.5 — Dispatch Subagents
 
-After Step 1 inventory, **dispatch parallel subagents** using `delegate_task` before doing any audit work. See `prompts/system.md` Step 1.5 for the full orchestration pattern.
+After Step 1 inventory, dispatch subagents based on **what inputs were actually provided** — never hardcode all 3 lanes. See `prompts/system.md` Step 1.5 for the full decision table and dispatch patterns.
 
-- Lane A, B, C run concurrently — `delegate_task(tasks=[...])` batch mode
+- **Only screenshots or URL** → 1 Lane A subagent (or inline if quick scan / single page)
+- **Only frontend code** → 1 Lane B subagent
+- **Only backend code** → 1 Lane C subagent
+- **Multiple input types** → batch dispatch, one entry per applicable lane
 - Each subagent self-loads `prompts/system.md` and the relevant checklist via `skill_view()`
-- Each subagent returns structured findings only — no full report
-- Main agent collects results, de-duplicates, applies P0 overrides, then writes the report
+- Each subagent returns structured findings only — main agent synthesizes the report
 
 ### Step 2 — Lane Reference (for subagents)
 

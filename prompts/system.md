@@ -144,20 +144,27 @@ Before scoring issues, map the product:
 
 ## Step 1.5 — Dispatch Subagents (Orchestration)
 
-Before doing any audit work yourself, determine which lanes apply and dispatch parallel subagents using `delegate_task`. The main agent's job from here is coordination and synthesis — not auditing.
+Count how many lanes apply based on what the user actually provided. Dispatch only those. Never spawn a lane subagent for an input that doesn't exist.
 
-### When to use subagents
+### Decision: subagents or inline?
 
-| Condition | What to dispatch |
-|-----------|-----------------|
-| URL or screenshots provided | Lane A subagent |
-| Frontend code provided | Lane B subagent (parallel with A) |
-| Backend code provided | Lane C subagent (parallel with A and B) |
-| 3+ critical journeys to audit | Split journeys across 2–3 Lane A subagents (one group of journeys each) |
-| Quick scan only | Single subagent with quick-scan scope — no splitting needed |
-| Single page / single flow | Single subagent — no splitting needed |
+| Inputs provided | What to do |
+|----------------|------------|
+| 1 input type only AND (quick scan OR single page) | Run inline — no subagent needed |
+| 1 input type only AND full audit | 1 subagent for that lane — avoids saturating main agent context |
+| 2 input types | 2 subagents, batch dispatch |
+| 3 input types | 3 subagents, batch dispatch |
+| 3+ journeys in Lane A | Split Lane A across 2 subagents within that batch |
 
-**Do not run any audit work in the main agent. Dispatch everything.**
+**Lane mapping:**
+- Screenshots / URL → **Lane A only**
+- Frontend code only → **Lane B only**
+- Backend code only → **Lane C only**
+- URL + frontend code → **Lane A + B**
+- Frontend + backend code → **Lane B + C**
+- All three → **Lane A + B + C**
+
+**Never hardcode all 3 lanes. Only add a lane to the task list if its input type was actually provided.**
 
 ### Subagent context block
 
@@ -180,6 +187,8 @@ Checklist: [site.md / app.md]
 ```
 
 ### Lane A — Rendered Experience Subagent
+
+Only dispatch if URL or screenshots were provided.
 
 ```python
 delegate_task(
@@ -280,17 +289,37 @@ Output format — structured finding list only:
 )
 ```
 
-### Batch dispatch (parallel)
+### Batch dispatch (parallel, only for 2+ lanes)
 
-When multiple lanes apply, dispatch all at once using the `tasks` array so they run concurrently:
+Build the task list from only the lanes that actually apply, then dispatch once:
 
 ```python
-delegate_task(tasks=[
-    {"goal": "...Lane A goal...", "context": context, "toolsets": ["web", "browser", "vision", "file", "skills", "search", "todo"]},
-    {"goal": "...Lane B goal...", "context": context, "toolsets": ["file", "skills", "search", "todo"]},
-    {"goal": "...Lane C goal...", "context": context, "toolsets": ["file", "skills", "search", "todo"]},
-])
+tasks = []
+
+# Only add if URL or screenshots were provided
+if has_url_or_screenshots:
+    tasks.append({"goal": lane_a_goal, "context": context, "toolsets": ["web", "browser", "vision", "file", "skills", "search", "todo"]})
+
+# Only add if frontend code was provided
+if has_frontend_code:
+    tasks.append({"goal": lane_b_goal, "context": context, "toolsets": ["file", "skills", "search", "todo"]})
+
+# Only add if backend code was provided
+if has_backend_code:
+    tasks.append({"goal": lane_c_goal, "context": context, "toolsets": ["file", "skills", "search", "todo"]})
+
+if len(tasks) == 1:
+    delegate_task(**tasks[0])          # single subagent, no batch overhead
+elif len(tasks) > 1:
+    delegate_task(tasks=tasks)         # parallel batch — only what applies
+# if len(tasks) == 0: run inline (quick scan or single page)
 ```
+
+**Examples:**
+- User gives only screenshots → `tasks` has 1 entry (Lane A). Single subagent.
+- User gives only backend code → `tasks` has 1 entry (Lane C). Single subagent.
+- User gives URL + frontend code → `tasks` has 2 entries (A + B). Parallel batch.
+- User gives URL + frontend + backend → `tasks` has 3 entries. Parallel batch.
 
 ### Journey splitting (Lane A only, 3+ journeys)
 
