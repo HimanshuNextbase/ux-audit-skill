@@ -142,29 +142,27 @@ Before scoring issues, map the product:
 
 ---
 
-## Step 1.5 — Dispatch Subagents (Orchestration)
+## Step 1.5 — Orchestration
 
-Count how many lanes apply based on what the user actually provided. Dispatch only those. Never spawn a lane subagent for an input that doesn't exist.
+Look at what the user actually gave you. Decide the work structure from that — do not follow a fixed template.
 
-### Decision: subagents or inline?
+**The principle:** each distinct input type is a natural unit of work. Assess independently, then merge.
 
-| Inputs provided | What to do |
-|----------------|------------|
-| 1 input type only AND (quick scan OR single page) | Run inline — no subagent needed |
-| 1 input type only AND full audit | 1 subagent for that lane — avoids saturating main agent context |
-| 2 input types | 2 subagents, batch dispatch |
-| 3 input types | 3 subagents, batch dispatch |
-| 3+ journeys in Lane A | Split Lane A across 2 subagents within that batch |
+- URL or screenshots → rendered experience work (Lane A)
+- Frontend code → code analysis work (Lane B)
+- Backend code → server-pattern work (Lane C)
 
-**Lane mapping:**
-- Screenshots / URL → **Lane A only**
-- Frontend code only → **Lane B only**
-- Backend code only → **Lane C only**
-- URL + frontend code → **Lane A + B**
-- Frontend + backend code → **Lane B + C**
-- All three → **Lane A + B + C**
+If there is only one input type and the scope is narrow (quick scan, single page), do the work inline — no delegation overhead needed. If the scope is deep, or if there are multiple independent input types that can run in parallel, use `delegate_task`. Use batch mode only when you have 2 or more genuinely independent tasks.
 
-**Never hardcode all 3 lanes. Only add a lane to the task list if its input type was actually provided.**
+**Subagents are a tool, not a template.** Use them when they speed things up or protect the main agent's context. Don't use them when the task is small enough to do directly.
+
+When delegating, each subagent receives:
+- The product understanding summary from Step 0.4 (verbatim — the subagent has no access to the parent conversation)
+- Exactly the input it is responsible for (its URL, its files, its screenshots)
+- Instruction to load `prompts/system.md` and the relevant checklist via `skill_view()`
+- The output format: structured finding list only (not a full report)
+
+The main agent collects subagent results, de-duplicates, applies P0 overrides, and writes the final report.
 
 ### Subagent context block
 

@@ -75,16 +75,14 @@ Then follow **Step 0 in that file**. It covers:
 - Load: `skill_view("ux-audit", "prompts/quick-scan.md")`
 - No checklist needed — the quick scan prompt is self-contained.
 
-### Step 1.5 — Dispatch Subagents
+### Step 1.5 — Orchestration
 
-After Step 1 inventory, dispatch subagents based on **what inputs were actually provided** — never hardcode all 3 lanes. See `prompts/system.md` Step 1.5 for the full decision table and dispatch patterns.
+Look at what the user provided and decide the work structure from that. See `prompts/system.md` Step 1.5 for the full principle.
 
-- **Only screenshots or URL** → 1 Lane A subagent (or inline if quick scan / single page)
-- **Only frontend code** → 1 Lane B subagent
-- **Only backend code** → 1 Lane C subagent
-- **Multiple input types** → batch dispatch, one entry per applicable lane
-- Each subagent self-loads `prompts/system.md` and the relevant checklist via `skill_view()`
-- Each subagent returns structured findings only — main agent synthesizes the report
+- Small scope (quick scan, single page, one input type) → work inline, no delegation needed
+- Deep scope or multiple independent input types → use `delegate_task`, one subagent per input type
+- Each subagent self-loads the skill files it needs via `skill_view()` and returns structured findings
+- Main agent merges results, de-duplicates, applies P0 overrides, writes the report
 
 ### Step 2 — Lane Reference (for subagents)
 
