@@ -186,7 +186,7 @@ Checklist: [site.md / app.md]
 
 ### Lane A — Rendered Experience Subagent
 
-Only dispatch if URL or screenshots were provided.
+Dispatch if URL, screenshots, or frontend code was provided. If no URL was given, the subagent discovers the live URL or runs the app locally — it never skips screenshots just because no URL was explicitly passed.
 
 ```python
 delegate_task(
@@ -195,6 +195,24 @@ delegate_task(
 Load these skill files in order:
   skill_view("ux-audit", "prompts/system.md")         # full audit procedure
   skill_view("ux-audit", "checklists/site.md")         # or app.md per product type
+
+**Step 0: URL Acquisition — do this first, before any auditing**
+A live URL may or may not have been provided. Handle every case:
+1. If a URL was provided in context → use it directly.
+2. If no URL was provided → discover it from the code:
+   a. Search these files for a deployed URL: README.md, package.json (`homepage` field),
+      vercel.json, netlify.toml, wrangler.toml, fly.toml, .env.example, app.config.ts/js,
+      .github/workflows/*.yml (look for any `https://` deploy target or preview URL).
+   b. If found → use that URL for all browser checks.
+   c. If not found → run the app locally:
+      - Detect package manager: pnpm-lock.yaml → pnpm | yarn.lock → yarn | bun.lockb → bun | else npm
+      - Install: `[pm] install`
+      - Start: `[pm] run dev` (check package.json `scripts` for alternatives: start, serve, preview)
+      - Watch terminal output for the ready URL — look for "Local:", "listening on", "ready on http://"
+      - Use that localhost URL for all browser checks and screenshots.
+   d. If none of the above works (pure API/backend repo, build error, or no web entry point):
+      → Skip browser-based checks. Note "Rendered view unavailable — code analysis only" at the
+        top of findings. Do not skip — proceed with whatever code analysis is possible.
 
 Work through every Lane A category in system.md Step 2:
   IA, CONTENT, FORM, AUTH, A11Y, VISUAL, MOBILE, PERF,
@@ -263,7 +281,7 @@ Also return:
   - Voice consistency verdict
 """,
     context=context,
-    toolsets=["web", "browser", "vision", "file", "skills", "search", "todo"],
+    toolsets=["web", "browser", "vision", "file", "terminal", "skills", "search", "todo"],
 )
 ```
 
@@ -339,9 +357,9 @@ Build the task list from only the lanes that actually apply, then dispatch once:
 ```python
 tasks = []
 
-# Only add if URL or screenshots were provided
-if has_url_or_screenshots:
-    tasks.append({"goal": lane_a_goal, "context": context, "toolsets": ["web", "browser", "vision", "file", "skills", "search", "todo"]})
+# Add if URL/screenshots provided OR frontend code provided (subagent discovers URL or runs locally)
+if has_url_or_screenshots or has_frontend_code:
+    tasks.append({"goal": lane_a_goal, "context": context, "toolsets": ["web", "browser", "vision", "file", "terminal", "skills", "search", "todo"]})
 
 # Only add if frontend code was provided
 if has_frontend_code:
@@ -361,7 +379,8 @@ elif len(tasks) > 1:
 **Examples:**
 - User gives only screenshots → `tasks` has 1 entry (Lane A). Single subagent.
 - User gives only backend code → `tasks` has 1 entry (Lane C). Single subagent.
-- User gives URL + frontend code → `tasks` has 2 entries (A + B). Parallel batch.
+- User gives only frontend code (no URL) → `tasks` has 2 entries (A + B). Lane A discovers the live URL or runs the app locally; Lane B does static code analysis. Both run in parallel.
+- User gives URL + frontend code → `tasks` has 2 entries (A + B). Lane A uses the provided URL directly.
 - User gives URL + frontend + backend → `tasks` has 3 entries. Parallel batch.
 
 ### Journey splitting (Lane A only, 3+ journeys)
