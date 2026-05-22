@@ -57,8 +57,13 @@ Score each audited journey on 4 axes. A single fail on any axis fails the journe
 - **What:** [Specific description of the issue on the specific page/element]
 - **Why it matters:** [User impact + business impact]
 - **Standard violated:** [WCAG criterion / Nielsen heuristic / Cooper / Krug / Norman / etc.]
-- **Fix:** [Specific, actionable recommendation]
-- **Evidence:** [Screenshot ref / page URL / element selector]
+- **Fix:** [One sentence — what to change and why. Written for product/design.]
+- **Implementation:** [Developer-ready detail. One of:]
+  - Code issue → before/after code block
+  - Copy issue → before/after copy rewrite
+  - Structural issue → plain description of the structural change
+  - Design constraint → the specific rule + implementation hint
+- **Evidence:** [Screenshot ref / page URL / element selector / file:line]
 
 ---
 

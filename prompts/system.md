@@ -212,9 +212,25 @@ Output format — return a structured finding list only (no full report):
   [CODE-NNN] Title
   - Score: [0-20] (UI:[0-4], Biz:[0-4], Reach:[0-4], Rec:[0-4], Comp:[0-4])
   - Priority: P[0-3]
-  - Evidence: [specific page/element/screenshot]
-  - Fix: [specific actionable fix]
+  - Evidence: [specific page/element/screenshot ref]
+  - Fix: [one sentence — what to change and why]
+  - Implementation: [developer-ready detail — see types below]
   - Standard: [WCAG SC / Nielsen heuristic / etc.]
+
+Implementation field by issue type — always include one of:
+  • Code issue (A11Y, VISUAL, MOBILE, PERF, FORM, AUTH): before/after code snippet
+    Before: <button onclick="...">X</button>
+    After:  <button aria-label="Close dialog" onclick="...">X</button>
+  • Copy issue (CONTENT, VOICE, GOODWILL): before/after copy rewrite
+    Before: "Submit"
+    After:  "Create your account"
+  • Structural issue (IA, FLOW, EXCISE, NOTIFY): plain description of the structural change
+    "Collapse the 4-screen wizard into a single form. Fields needed: email + password only."
+  • Backend issue (Lane C): corrected response shape or endpoint pattern
+    Before: HTTP 500 { "error": "NullPointerException" }
+    After:  HTTP 422 { "message": "Email already in use", "field": "email" }
+  If the fix is a design decision with no single correct implementation, describe the
+  constraint ("touch target must be ≥ 44×44 CSS px — expand via ::before overlay").
 
 Also return:
   - Journey scores table (4-axis per journey + TTFV)
@@ -249,7 +265,10 @@ Output format — structured finding list only:
   - Score: [0-20] (UI:[0-4], Biz:[0-4], Reach:[0-4], Rec:[0-4], Comp:[0-4])
   - Priority: P[0-3]
   - Evidence: [file:line or component name]
-  - Fix: [specific code fix]
+  - Fix: [one sentence — what to change and why]
+  - Implementation: [before/after code snippet — always include for code issues]
+    Before: [current code]
+    After:  [corrected code]
   - Standard: [WCAG SC / axe rule / etc.]
   - Source: [Frontend]
 """,
@@ -278,7 +297,10 @@ Output format — structured finding list only:
   - Score: [0-20]
   - Priority: P[0-3]
   - Evidence: [file:line or endpoint name]
-  - Fix: [specific fix]
+  - Fix: [one sentence — what to change and why]
+  - Implementation: [corrected response shape or endpoint pattern — always include]
+    Before: [current behavior]
+    After:  [corrected behavior]
   - Standard: [relevant standard]
   - Source: [Backend]
 """,
@@ -725,10 +747,21 @@ Use the appropriate template:
 **Always:**
 - Lead with what is working (positives first — goodwill is an asset)
 - Group issues by taxonomy code (IA / CONTENT / FORM / AUTH / A11Y / VISUAL / MOBILE / PERF / SEO / TRUST / PWA / FLOW / EXCISE / GOODWILL / DELIGHT / NOTIFY / VOICE / AI-SLOP)
-- Every issue includes: what it is, why it matters, which standard it violates, and exactly how to fix it
+- Every issue includes: what it is, why it matters, which standard it violates, how to fix it, AND a concrete implementation
 - Every finding cites at least one: WCAG 2.2, Nielsen heuristics, Core Web Vitals, OWASP ASVS, Material Design 3, Apple HIG, W3C WAI tutorials
 - Include a Quick Wins section (issues fixable in under 1 hour)
 - End with a Roadmap: P0 → P1 sprint items → P2 backlog → P3 polish
+
+**Fix vs Implementation — two distinct fields, both required:**
+
+Every finding must have both:
+- **Fix** — one sentence: what is wrong and what needs to change. Written for the product manager or designer who decides whether to act.
+- **Implementation** — the developer-ready detail. Written for the engineer who will do the work. Always include one of:
+  - Code issues → before/after code block (HTML, CSS, JS, ARIA)
+  - Copy issues → before/after copy rewrite ("Submit" → "Create your account")
+  - Structural issues → plain description of the structure change ("Collapse the 4-screen wizard into a single form; only email + password are required")
+  - Backend issues → corrected response shape or endpoint pattern
+  - Design constraint issues → the specific rule + implementation hint ("touch target ≥ 44×44 CSS px — expand via `::before` pseudo-element overlay, no visual change needed")
 
 ---
 

@@ -28,7 +28,13 @@
     "WCAG 2.2 — [criterion number and name]",
     "Nielsen heuristic — [heuristic name]"
   ],
-  "recommendation": "Specific, actionable fix. Include the element, the change, and the expected result.",
+  "fix": "One sentence — what to change and why. Written for product/design decision-makers.",
+  "implementation": {
+    "type": "code | copy | structural | constraint",
+    "before": "Current state — code snippet, copy string, or description",
+    "after": "Corrected state — code snippet, copy rewrite, or structural description",
+    "notes": "Any implementation constraints or edge cases the developer should know"
+  },
   "owner": "Team or role responsible",
   "acceptance_criteria": [
     "Observable condition 1 that confirms the fix is complete",
