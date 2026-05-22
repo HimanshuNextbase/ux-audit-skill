@@ -23,6 +23,18 @@
 
 ---
 
+## Journey Scores
+
+Score each audited journey on 4 axes. A single fail on any axis fails the journey.
+
+| Journey | Mode | value_delivery | task_completion | operating_cost | feedback_quality | TTFV | Chain |
+|---------|------|---------------|-----------------|---------------|-----------------|------|-------|
+| [e.g. Sign-up → first task] | cold-start | ✅/⚠️/❌ | ✅/⚠️/❌ | ✅/⚠️/❌ | ✅/⚠️/❌ | [# clicks] | [chain name or —] |
+
+**TTFV** = clicks from landing to first meaningful value. Target: ≤ 5 (cold-start), ≤ 2 (returning).
+
+---
+
 ## What Is Working
 
 [3–5 things done well. Specific — name the element, page, or pattern. Being concrete here builds credibility for the critical findings that follow.]
@@ -95,6 +107,38 @@
 
 ---
 
+### DELIGHT — Desirability
+
+**Norman's layer achieved:** Visceral ✅/❌ · Behavioral ✅/❌ · Reflective ✅/❌
+
+**Delight signals present (need 2 to pass):**
+1. [Signal name + specific instance, or "none found"]
+2. [Signal name + specific instance, or "none found"]
+
+**Verdict:** ✅ Pass / ❌ Fail — [one sentence]
+
+---
+
+### GOODWILL — Trust Reservoir
+
+**Drains identified:**
+- [Specific instance on specific page]
+
+**Builders identified:**
+- [Specific instance on specific page]
+
+**Net assessment:** [positive / neutral / negative — one sentence]
+
+---
+
+### VOICE — Tone Consistency
+
+**Surfaces checked:** Marketing · App UI · Empty states · Error messages · System emails
+**Consistent:** ✅/⚠️/❌
+**Mismatches found:** [specific examples, or "none"]
+
+---
+
 ## Quick Wins (Fixable in < 1 Hour)
 
 | # | Fix | Category | Impact |
@@ -145,3 +189,19 @@
 | HTTP Observatory | Header hygiene | Grade: [grade] |
 | Manual keyboard | Keyboard-only walkthrough | [pass/fail notes] |
 | Screen reader | NVDA / VoiceOver | [pass/fail notes] |
+
+---
+
+## Audit Limitations
+
+This audit can determine: whether the product clears the usability floor, completes its primary tasks, passes accessibility checks, and shows evidence of design craft. It cannot determine:
+
+| Cannot assess | Why | Use instead |
+|--------------|-----|-------------|
+| Long-term retention | One session cannot see this | Real product analytics, cohort retention curves |
+| Emotional resonance over time | Subjective, longitudinal | User interviews, NPS |
+| Habit formation | Requires weeks of observation | Behavioral cohort analysis |
+| Cultural / market fit | Requires market context | Localized user testing |
+| "True intuition" — it just feels right | Tacit, not cognitive | Senior designer review + usability testing |
+
+A passing audit means: *"This clearly avoids the floor for someone to actually try it."* Whether they keep using it requires real users and time.

@@ -23,12 +23,29 @@ Ask or infer all of the following before touching any checklist:
 - **What stage is the product?** — Early MVP / Growing product / Mature / Pre-launch
 
 ### 0.2 — User Flow Mapping
-Before checking anything, map the key user journeys. For each journey identify:
+
+**JTBD framing first:** Before listing steps, answer: *What job is the user hiring this product to do, and in what context?* The job is rarely what the surface label suggests — a user opening a finance app at 7am is "hiring it to feel in control before the day starts," not "checking their balance." Evaluate flows against the job, not the interface.
+
+**Journey context mode:** Set this explicitly before auditing. Each mode has different pass conditions.
+- **Cold-start** — first-time user, no cookies, no account. Onboarding must work; empty states must guide; time-to-first-value is the key metric.
+- **Returning** — logged-in user with populated data. Skip onboarding; test the actual work loop; draft/recent/continue signals matter.
+- **Power-user** — returning with realistic data volume. Test scale, density, search/filter, keyboard shortcuts, bulk actions.
+
+For each journey, identify:
 - **Entry point** — where do users come from (search, direct, referral, app store)?
-- **Goal** — what is the user trying to accomplish?
+- **Job** — what job is the user hiring this step to do, and when/why?
 - **Steps** — what is the step-by-step path through the product?
-- **Exit point** — what does success look like (purchase, sign-up, task completion)?
-- **Failure modes** — where do users commonly drop off or get stuck?
+- **Exit point** — what does success look like?
+- **Failure modes** — where do users drop off or get stuck?
+- **Time-to-first-value (TTFV)** — count the clicks from landing to the first moment the user receives meaningful value. Flag if > 5 clicks for cold-start, > 2 clicks for returning.
+
+**Journey chains:** Real usage is chains, not isolated tasks. Map them explicitly:
+```
+discover → try core feature → save result → share with colleague
+                    ↓
+            adjust settings → revisit saved result
+```
+A break at any link fails the chain. Score chains as a unit in addition to individual journeys.
 
 Minimum journeys to map (adjust for product type):
 | Product type | Minimum journeys |
@@ -39,35 +56,73 @@ Minimum journeys to map (adjust for product type):
 | SaaS app | 6–10 (sign-up → onboard → core task → share → settings → billing) |
 | PWA | 5+ (install → core task → offline → update → re-engage) |
 
-### 0.3 — Audit Scope & Goals
-- **What is the audit trying to answer?** — Full review / Accessibility compliance / Performance / Conversion / Specific flow
-- **What input is available?** — Live URL / URL + credentials / Frontend repo / Full-stack repo / Screenshots / Combination
+### 0.3 — Audit Scope & Input Protocol
+
+- **What is the audit trying to answer?** — Full review / Accessibility compliance / Performance / Conversion / Specific flow / Single page
 - **Are there known problem areas?** — User complaints, support tickets, analytics drop-off points, stakeholder concerns
 - **What are the business stakes?** — Conversion, compliance deadline, accessibility lawsuit risk, launch readiness
+
+**Single-page / single-flow mode:** If the user specifies a single page or flow ("audit the login page", "check the settings screen", "look at the onboarding flow"), skip the full journey mapping in Step 0.2. Map only the requested page/flow. Apply only the checklist sections relevant to it. Still complete 0.1 and 0.4.
+
+#### Input type handling
+
+**Live URL (with or without auth)**
+- Run Lane A in full: IA, content, visual, a11y, forms, performance, mobile, SEO, trust.
+- If behind a login wall, ask for credentials or a session recording before starting.
+- You cannot inspect ARIA attributes, lint errors, or component state from the rendered page alone — note these explicitly as "not verifiable from URL — requires code review."
+
+**Screenshots / images**
+- Confirm which page and state each image represents before auditing (ask if not labelled).
+- Request minimum viable screenshot set if not provided: happy path, error state, empty state, mobile viewport of the primary flow.
+- What you CAN assess from screenshots: layout, visual hierarchy, copy, CTA text, form labels, colour/typography, spacing, navigation structure, anti-slop tells, visual states captured.
+- What you CANNOT assess: keyboard navigation, focus ring visibility, ARIA states, actual contrast ratio (visual estimate only — flag as "verify with contrast checker"), hover/focus/active states not shown, performance, screen reader behavior.
+- Explicitly note every "cannot verify from screenshot" item at the end of each screenshot finding.
+
+**Frontend code (HTML / CSS / JS / React / Vue / Svelte / etc.)**
+- Run Lane B in full: semantic HTML, ARIA correctness, focus management, 8-state component coverage, performance code patterns, anti-slop code checks.
+- You cannot assess visual rendering or copy quality without a screenshot or URL.
+- When both code and URL/screenshot are provided, Lane A + Lane B findings are combined. Conflicts: code is authoritative for ARIA and semantics; visual observation is authoritative for hierarchy and copy.
+
+**Backend code**
+- Check UX-relevant backend patterns only (not architecture or security beyond UX impact):
+  1. **Error response format** — Do 4xx/5xx responses return a structured, human-readable message field the frontend can surface to users? Raw stack traces, generic "Internal Server Error," or missing message fields are UX failures.
+  2. **Auth/session expiry** — What happens when a session token expires during active use? Correct behavior: redirect to sign-in with state preserved, or a clear "your session expired" prompt. Failures: silent 401 with a broken page, cryptic API error surfaced raw.
+  3. **Rate limiting** — Do rate-limit responses (429) include a `Retry-After` header and a user-readable message explaining the limit and when it resets?
+  4. **Validation alignment** — Does server-side validation match client-side rules exactly? Mismatches (server rejects what client accepted) cause "the form said OK but it failed" UX — flag any divergence.
+  5. **Long-running operations** — Are endpoints that take >10s backed by a job/status pattern the UI can poll? If not, the frontend has no way to show progress or allow cancellation — flag as PERF/UX issue.
+- Combine backend findings with Lane A/B findings in the same report under the relevant taxonomy code (AUTH, FORM, PERF, TRUST).
+
+**Spec / requirements document**
+- No checklist items apply — run spec-level check only (Step 1 spec section).
+- Flag: missing screens for key journeys, screens with multiple unrelated purposes, unclear entry/exit points, missing error and empty state coverage.
+
+**Combination inputs**
+- Run every applicable lane for each input type provided.
+- When inputs conflict (e.g., screenshot shows one thing, code shows another), prefer code for ARIA/semantics, prefer visual for hierarchy and copy, and explicitly flag the discrepancy as an issue.
+- Label every finding with its source: [URL], [Screenshot], [Frontend], [Backend], [Spec].
 
 ### 0.4 — Confirm Before Proceeding
 Summarise your understanding back to the user in this format:
 
 ```
-Product: [one-sentence description]
-Type: [site / app / PWA / etc.]
-Industry: [domain]
-Primary users: [who]
+Product: [one-sentence description — what it does, who uses it]
+Type: [site / SaaS app / mobile app / PWA / internal tool]
+Industry: [domain — affects which anti-patterns apply]
+Stage: [MVP / growing / mature / pre-launch]
+Primary users: [who, technical level, accessibility needs, primary device]
+JTBD: [the job users are hiring this product to do, and in what context]
+Journey context mode: [cold-start / returning / power-user]
 Critical journeys to audit:
-  1. [Journey name] — [entry point → goal → success condition]
+  1. [Journey name] — [entry point → goal → success condition] — TTFV target: [≤5 / ≤2 clicks]
   2. [Journey name] — ...
-Scope: [full / focused area]
-Input: [URL / code / screenshots]
+Scope: [full audit / single page / specific flow / accessibility-only / quick scan]
+Input: [URL / screenshots / frontend code / backend code / spec / combination]
 Known issues: [if any]
 Checklist: [site.md / app.md]
 ```
 
 **Wait for confirmation or correction before proceeding to Step 1.**
 If the user has already provided all this context, confirm your understanding and proceed immediately — do not ask redundant questions.
-
----
-
-## Step 1 — Inventory the Target
 
 ---
 
@@ -218,6 +273,110 @@ Work through each category below. Flag every issue with its taxonomy code.
 - Update prompt shown after new version is available
 - No stale-cache confusion
 
+#### FLOW — Journey Evaluation (run per journey, not per page)
+
+Score each mapped journey on 4 independent axes. These are not interchangeable — a flow can pass 3 and fail 1 and that 1 matters.
+
+| Axis | Pass condition | Failure example |
+|------|---------------|----------------|
+| **value_delivery** | User received the value they came for | Success screen shown, but cart silently emptied |
+| **task_completion** | Final state matches success criteria (judge by pixels, not URL) | URL changed to /success but no confirmation visible |
+| **operating_cost** | Zero unintentional steps (excess = actual steps − core steps − intentional friction) | "Are you sure?" on a reversible archive action |
+| **feedback_quality** | Every step communicated; every mistake recoverable | Form failed silently — no error message, no indication of what broke |
+
+**Operating cost accounting:** Count user-meaningful actions (clicks, submits, navigations, modal dismissals). Subtract intentional friction (irreversibility confirmations, security guards). Subtract core required steps. Any remainder > 0 = fail.
+
+**"What if" failure scenario testing** — run at least 3 off-happy-path tests per critical journey:
+- Wrong/invalid input at each required field — does the error recover gracefully and inline?
+- Back button at the worst point (mid-form, mid-checkout, mid-onboarding) — is state lost?
+- Slow/broken network mid-action — does the UI communicate what happened and offer retry?
+- Mobile → desktop handoff — is in-progress state (draft, cart, onboarding step) preserved across sessions?
+
+**"3 Days Later" check** — does the product show "continue where you left off", recent items, or draft-saved signals for a returning user? If the user left mid-task, can they pick up without starting over? Absence is a P2 retention issue for any CRUD or multi-step flow.
+
+#### EXCISE — Friction Accounting (Cooper's Catalog)
+
+Flag any unintentional friction pattern. These are the most common:
+
+| Pattern | Example | Correct fix |
+|---------|---------|-------------|
+| Confirmation on reversible action | "Are you sure you want to archive?" | One-click + undo toast |
+| Modal interrupting active task | Survey popup mid-checkout | Never interrupt active flows |
+| Required field that should be optional | Phone number on newsletter signup | Make optional or remove |
+| Multi-step where one step suffices | 4-screen wizard for email + password | Single form |
+| Re-asking for known info | "What's your email?" when user is logged in | Pre-fill from session |
+| Forced account creation | "Sign up to read more" on public content | Allow guest access |
+| Decorative confirmation | "✓ Saved" toast for auto-saved single-char edit | Subtle inline state change only |
+| Blocking spinner on background work | "Saving…" disables entire UI | Let user continue; background save |
+| Context-switch for trivial edit | "Edit" opens a new page for a short text field | Inline editing |
+| Cluttered settings | 50 toggles when 5 matter to 90% of users | Default sensibly; progressive disclosure |
+| Full-screen cookie consent | GDPR modal blocking content before interaction | Bottom banner; defer to first interaction |
+| Two-click delete on reversible content | Confirm → delete on an archivable item | One-click + undo toast |
+
+**Intentional friction is acceptable with justification:** type DELETE to confirm on truly irreversible actions, re-enter password before billing changes, two-step confirm on permanent data destruction.
+
+#### GOODWILL — Trust Reservoir (Krug)
+
+The trust reservoir is finite. Drains and builders both have compound effect — list specific instances observed.
+
+**Drains (depletes user trust):**
+- Hiding information users want (pricing, support contact, shipping cost until step 4)
+- Punishing users for "wrong" input format (phone with dashes rejected, but no hint given)
+- Asking for personal information before providing value
+- Faux sincerity / corporate-speak that says nothing ("We're passionate about your journey")
+- Sizzle blocking the path (marketing imagery in the way of task completion)
+- Amateurish errors (broken images, placeholder text, spelling mistakes in UI)
+
+**Builders (increases user trust):**
+- Main user tasks are obvious and frictionless on first visit
+- Upfront about cost, limitations, and what happens next
+- Saves user steps — pre-fills, remembers preferences, does the obvious thing automatically
+- FAQs are real and candid, not marketing-speak answers to marketing-speak questions
+- Apologizes and offers recovery when things go wrong
+- Effort and craft are visible — small details signal that someone cared
+
+#### DELIGHT — Desirability Check
+
+Most AI-generated UIs achieve only the behavioral layer (it works). Flag if visceral or reflective layers are absent.
+
+| Layer (Norman) | Question | Pass condition |
+|---------------|----------|---------------|
+| **Visceral** | Does the first impression feel intentional and crafted? | Design doesn't look like a template; distinct visual identity |
+| **Behavioral** | Does it work and achieve the user's goal? | Task completion + feedback quality pass |
+| **Reflective** | Does it create a sense of "this product gets me"? | Microcopy has voice; at least 2 named delight signals present |
+
+**Delight signals — name 2 specific ones to pass. If you have to talk yourself into one, fail:**
+- Custom brand illustration (not undraw.co/storyset.com stock art)
+- Microcopy with voice — a 404 that's funny, a placeholder that's actually helpful, a tooltip with an aside
+- Deliberate easing curves — cubic-bezier motion with intent, not default `ease-in-out`
+- Considered empty state — personality and an action, not just "No items found."
+- Human date formatting — "yesterday at 3pm", "ships Tuesday" instead of ISO timestamps
+- Celebratory first-action moment — subtle on first meaningful task completion
+- Custom focus styles matching brand (not just default browser blue ring)
+- Loading state with personality — tied to brand, not a generic spinner
+- Easter egg / unexpected detail — a pun, inside reference, or hidden touch
+
+#### NOTIFY — Notification & Async UX
+
+Async events (background jobs, emails sent, imports completed, file exports ready) are where most SaaS products fail silently.
+
+- **Proactive vs reactive:** Does the system notify users when async work completes, or must users know to check? Proactive notification (in-app, email, push) is pass; "check back later" is fail.
+- **Background task feedback:** Long-running operations (>10s) show progress, estimated time, or allow cancellation — never a frozen screen.
+- **Async button behavior:** Action buttons show a loading state and disable themselves on click to prevent duplicate submissions.
+- **Event-driven state:** If another user's action changes shared data (a colleague edits a doc, a payment status changes), does the current user's view update or serve stale data?
+- **Notification permission timing:** Push/email permission requested AFTER user has seen value — never on first page load.
+
+#### VOICE — Tone Consistency
+
+Check all text-bearing surfaces for whether the same "voice" speaks across all of them:
+- Marketing site copy (what the brand promises)
+- App UI copy (navigation, buttons, settings labels)
+- Empty states and onboarding
+- Error messages (the moment when the brand is most human or most robotic)
+- System emails (confirmation, notification, re-engagement)
+
+Failure: error messages sound like engineering; marketing sounds like copywriting; they're different products written by different people with no shared voice guide. Flag mismatches with specific examples.
+
 ---
 
 ### Lane B: Code / Repository (When Source is Available)
@@ -261,6 +420,38 @@ Every interactive component must handle all 8 states:
 - No bounce/spring easing on UI controls
 - No auto-rotating carousel without pause control (WCAG 2.2.2)
 - Audio/video uses `autoplay muted loop playsinline`
+
+---
+
+### Lane C: Backend Code (When Server-Side Source is Available)
+
+When backend code is provided (Node/Express, Django, Rails, Go, etc.), check UX-relevant patterns only:
+
+**Error Response UX**
+- 4xx/5xx responses return a structured `{ message: "..." }` (or equivalent) field the frontend can display — not raw stack traces or generic "Internal Server Error"
+- Validation errors return field-level detail: `{ field: "email", message: "..." }` so the client can highlight the specific field — not a single top-level error string
+- Error messages are written in plain language (user-facing), not internal codes or exception class names
+
+**Auth & Session Expiry**
+- Token expiry during active use triggers a clean redirect to sign-in (not a broken page or raw 401 JSON response surfaced in the UI)
+- Redirect preserves the user's current URL so they land back on the right page after re-authenticating
+- Session expiry response is distinguishable from other auth errors (`401 + reason: "session_expired"` vs `401 + reason: "invalid_credentials"`) so the frontend can show the correct message
+
+**Rate Limiting**
+- 429 responses include `Retry-After` header (seconds or HTTP date)
+- 429 response body includes a human-readable explanation and retry time — not just a status code
+- Rate limits are documented in API responses, not discovered by users hitting silent failures
+
+**Validation Alignment**
+- Server-side validation rules match client-side rules exactly — divergence means users can pass client validation, submit, and see a confusing server-side rejection
+- Required fields, format rules (email regex, password requirements), and length limits are identical on both sides
+- If server adds extra validation the client doesn't surface (e.g., username uniqueness), the client must display the server's error inline at the field, not at the top of the form
+
+**Long-Running Operations**
+- Endpoints that routinely take >10s are backed by an async job pattern: `POST /action` → `202 Accepted + { jobId }`, then `GET /jobs/{id}` for the UI to poll or a websocket/SSE stream
+- Synchronous endpoints that can block for >10s under load are flagged — the UI will appear frozen with no feedback
+
+**Label all findings:** `[Backend]` so they're distinguishable from Lane A/B findings in the report.
 
 ---
 

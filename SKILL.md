@@ -1,6 +1,6 @@
 ---
 name: ux-audit
-description: "Systematic UX audit for SaaS web apps and mobile apps — WCAG 2.2, Nielsen heuristics, anti-slop detection, 5-factor severity scoring. Accepts a live URL, source code, or screenshots. Outputs prioritised findings with P0–P3 bands, fix recommendations, and standards citations."
+description: "Systematic UX audit for SaaS web apps and mobile apps — WCAG 2.2, Nielsen heuristics, anti-slop detection, 5-factor severity scoring. Accepts a live URL, frontend code, backend code, screenshots, design specs, or any combination. Outputs prioritised findings with P0–P3 bands, fix recommendations, and standards citations."
 version: 1.1.0
 author: HimanshuNextbase
 license: MIT
@@ -13,7 +13,7 @@ metadata:
 
 # UX Audit
 
-Performs systematic, evidence-backed UX audits on SaaS web apps and mobile apps. Accepts a live URL, source code, screenshots, or any combination. Produces prioritised findings with severity scores, standards citations, and actionable fix recommendations.
+Performs systematic, evidence-backed UX audits on SaaS web apps and mobile apps. Accepts a live URL, frontend code, backend code, screenshots, design specs, or any combination — including a single specific page or flow. Produces prioritised findings with severity scores, standards citations, and actionable fix recommendations.
 
 ---
 
@@ -28,19 +28,39 @@ Trigger this skill when the user asks to:
 
 ---
 
+## Input Types — What You Can Accept
+
+| Input | What's auditable | Limitations | Request additionally |
+|-------|-----------------|-------------|---------------------|
+| **Live URL** | IA, content, visual, a11y (visual), forms, mobile, performance, SEO, trust | Cannot inspect code-level ARIA or lint issues | Auth credentials if behind login |
+| **URL + auth credentials** | All of the above plus auth flows, gated pages | Same code-level limits | Confirm login flow to try |
+| **Screenshots / images** | Layout, hierarchy, copy, CTAs, form labels, visual states shown, typography, colour, anti-slop | Cannot assess: keyboard nav, ARIA states, focus rings, actual contrast ratios, performance, hover/focus/active states not captured in screenshot | State labels per image (which page, which state, viewport); request error + empty + mobile screenshots if not provided |
+| **Frontend code (HTML/CSS/JS/React/Vue/etc.)** | Semantic HTML, ARIA correctness, focus management, 8-state coverage, performance code patterns, anti-slop code tells | Cannot assess visual rendering or copy without seeing the page | None required |
+| **Backend code** | Error response UX, auth expiry behavior, rate-limit messaging, server/client validation alignment, long-running request handling | Cannot assess rendered UI | None required |
+| **Spec / requirements doc** | Missing screens, cognitive load per screen, entry/exit points, single purpose per screen | No rendered UI to check | None required |
+| **Combination** | Union of all applicable lanes | Each input type's limits still apply | Confirm which inputs are authoritative when they conflict |
+
+**Single-page mode:** If the user asks to audit one specific page or flow (e.g., "audit the login page", "check the billing settings"), skip full journey mapping from Step 0.2 — apply only checklist items relevant to that page, still complete Step 0 context questions.
+
+---
+
 ## Procedure
 
-### Step 0 — Understand First (always required)
+### Step 0 — Load the Audit System (do this first, always)
 
-Before touching any checklist, ask or infer:
-1. **What is the product?** — URL / repo / screenshots provided?
-2. **Product type** — SaaS web app / marketing site / mobile app / PWA / internal tool?
-3. **Critical user journeys** — sign-up, onboard, core task, billing, settings, error recovery?
-4. **Audit scope** — full audit / accessibility-only / quick scan / specific flow?
-5. **Known problem areas** — user complaints, drop-off points, stakeholder concerns?
+Load the full procedure before asking any questions:
+```
+skill_view("ux-audit", "prompts/system.md")
+```
 
-Confirm understanding before auditing. Load the full intake procedure:
-`skill_view("ux-audit", "prompts/system.md")` — Step 0 section for the complete confirmation format.
+Then follow **Step 0 in that file**. It covers:
+- Product understanding (what it is, industry, users, stage)
+- JTBD framing + journey context mode (cold-start / returning / power-user)
+- User flow mapping with journey chains and TTFV
+- Input type protocol (URL / screenshots / frontend code / backend code / spec)
+- A structured confirmation the user reviews before the audit begins
+
+**If the user already provided context** (URL, description, scope), infer what you can from it — do not ask for information already given. Confirm your understanding in the 0.4 format and proceed.
 
 ### Step 1 — Choose Audit Mode
 
@@ -57,9 +77,10 @@ Confirm understanding before auditing. Load the full intake procedure:
 
 ### Step 2 — Run the Audit
 
-Follow the two-lane model from `prompts/system.md`:
-- **Lane A** (URL / screenshot) — rendered experience: IA, content, visual design, a11y, forms, performance
-- **Lane B** (code / repo) — static analysis: semantic HTML, ARIA, focus management, linting, CWV
+Follow the three-lane model from `prompts/system.md`:
+- **Lane A** (URL / screenshot) — rendered experience: IA, content, visual, a11y, forms, performance, journey evaluation, excise, goodwill, delight, notify, voice
+- **Lane B** (frontend code) — static analysis: semantic HTML, ARIA, focus management, 8-state components, CWV code patterns
+- **Lane C** (backend code) — UX-relevant server patterns: error format, auth expiry, rate limiting, validation alignment, long-running ops
 
 Score every finding with the 5-factor rubric (0–4 each, max 20) → P0–P3 band.
 
@@ -107,9 +128,34 @@ Load these on demand — only when needed for the specific audit:
 
 ---
 
+## Issue Taxonomy
+
+| Code | What it covers |
+|------|---------------|
+| IA | Navigation, labels, wayfinding, hierarchy, search |
+| CONTENT | Language clarity, CTA text, empty states, copy tone |
+| FORM | Labels, validation, field types, error recovery |
+| AUTH | Login, registration, session, password |
+| A11Y | Contrast, keyboard, screen reader, ARIA, reflow, focus |
+| VISUAL | Hierarchy, typography, colour, 8-state components, animation |
+| MOBILE | Touch targets, thumb reach, orientation, keyboard types |
+| PERF | LCP ≤ 2.5s, INP ≤ 200ms, CLS ≤ 0.1, TTFB ≤ 800ms |
+| SEO | Indexing, metadata, structured data |
+| TRUST | Security headers, SSL, permissions, privacy |
+| PWA | Offline, installability, update messaging |
+| FLOW | Journey evaluation — 4-axis scores, TTFV, "what if" failure scenarios, "3 days later" |
+| EXCISE | Friction accounting — Cooper's 15 unintentional friction patterns |
+| GOODWILL | Trust reservoir — drains and builders (Krug) |
+| DELIGHT | Desirability — Norman's 3 layers, delight signals, brand voice |
+| NOTIFY | Notification and async UX — proactive vs reactive, background task feedback |
+| VOICE | Tone consistency across marketing, app, errors, emails |
+| AI-SLOP | AI-generated UI fingerprints — 50+ patterns |
+
+---
+
 ## Standards Cited
 
-WCAG 2.2 (A/AA/AAA) · Nielsen 10 Heuristics · Google Core Web Vitals · OWASP ASVS · Material Design 3 · Apple HIG · W3C WAI-ARIA APG · WCAG-EM
+WCAG 2.2 (A/AA/AAA) · Nielsen 10 Heuristics · Google Core Web Vitals · OWASP ASVS · Material Design 3 · Apple HIG · W3C WAI-ARIA APG · WCAG-EM · Steve Krug (Don't Make Me Think) · Alan Cooper (About Face) · Don Norman (Emotional Design) · Christensen JTBD Framework
 
 ---
 
@@ -128,8 +174,19 @@ WCAG 2.2 (A/AA/AAA) · Nielsen 10 Heuristics · Google Core Web Vitals · OWASP 
 
 A complete audit delivers:
 - ✅ All findings scored with 5-factor rubric and assigned P0–P3
+- ✅ Journey context mode declared (cold-start / returning / power-user) for each mapped journey
+- ✅ 4-axis journey scores (value_delivery / task_completion / operating_cost / feedback_quality) for each journey
+- ✅ TTFV (time-to-first-value click count) measured for the primary cold-start journey
+- ✅ At least 3 "what if" failure scenarios tested per critical journey
+- ✅ "3 Days Later" check completed for any CRUD or multi-step flow
+- ✅ Excise audit — Cooper's friction patterns checked
+- ✅ Goodwill accounting — drains and builders listed
+- ✅ Desirability check — 2 named delight signals or explicit fail
+- ✅ Voice consistency check across all text-bearing surfaces
+- ✅ Notify/async check — proactive vs reactive assessment
+- ✅ Anti-slop check completed
 - ✅ At least one empty state, one error state, one auth flow, and the mobile viewport covered
 - ✅ Quick wins table with time estimates
 - ✅ Roadmap organized by priority band
-- ✅ Anti-slop check completed
+- ✅ Audit limitations section in every full report
 - ✅ Every finding cites at least one published standard

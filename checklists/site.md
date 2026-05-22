@@ -87,7 +87,6 @@ Drop onto the page cold. Answer each question in under 2 seconds:
 - [ ] Inside cards: 24–32px padding
 - [ ] Related content is grouped together (proximity)
 - [ ] Data uses proximity and alignment to communicate relationships
-- [ ] No more than 3 primary colours on a page
 - [ ] Illustrations and images look like they belong to this product (brand match)
 - [ ] No text embedded in images or illustrations
 - [ ] Icon set is consistent — one library per project, no mixing
