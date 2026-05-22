@@ -75,10 +75,19 @@ Then follow **Step 0 in that file**. It covers:
 - Load: `skill_view("ux-audit", "prompts/quick-scan.md")`
 - No checklist needed — the quick scan prompt is self-contained.
 
-### Step 2 — Run the Audit
+### Step 1.5 — Dispatch Subagents
 
-Follow the three-lane model from `prompts/system.md`:
-- **Lane A** (URL / screenshot) — rendered experience: IA, content, visual, a11y, forms, performance, journey evaluation, excise, goodwill, delight, notify, voice
+After Step 1 inventory, **dispatch parallel subagents** using `delegate_task` before doing any audit work. See `prompts/system.md` Step 1.5 for the full orchestration pattern.
+
+- Lane A, B, C run concurrently — `delegate_task(tasks=[...])` batch mode
+- Each subagent self-loads `prompts/system.md` and the relevant checklist via `skill_view()`
+- Each subagent returns structured findings only — no full report
+- Main agent collects results, de-duplicates, applies P0 overrides, then writes the report
+
+### Step 2 — Lane Reference (for subagents)
+
+The three-lane model from `prompts/system.md` Step 2 is executed **by subagents**, not the main agent:
+- **Lane A** (URL / screenshot) — rendered experience: IA, content, visual, a11y, forms, performance, FLOW, EXCISE, GOODWILL, DELIGHT, NOTIFY, VOICE, anti-slop
 - **Lane B** (frontend code) — static analysis: semantic HTML, ARIA, focus management, 8-state components, CWV code patterns
 - **Lane C** (backend code) — UX-relevant server patterns: error format, auth expiry, rate limiting, validation alignment, long-running ops
 

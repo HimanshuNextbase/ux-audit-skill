@@ -142,7 +142,181 @@ Before scoring issues, map the product:
 
 ---
 
-## Step 2 — Run the Two-Lane Audit
+## Step 1.5 — Dispatch Subagents (Orchestration)
+
+Before doing any audit work yourself, determine which lanes apply and dispatch parallel subagents using `delegate_task`. The main agent's job from here is coordination and synthesis — not auditing.
+
+### When to use subagents
+
+| Condition | What to dispatch |
+|-----------|-----------------|
+| URL or screenshots provided | Lane A subagent |
+| Frontend code provided | Lane B subagent (parallel with A) |
+| Backend code provided | Lane C subagent (parallel with A and B) |
+| 3+ critical journeys to audit | Split journeys across 2–3 Lane A subagents (one group of journeys each) |
+| Quick scan only | Single subagent with quick-scan scope — no splitting needed |
+| Single page / single flow | Single subagent — no splitting needed |
+
+**Do not run any audit work in the main agent. Dispatch everything.**
+
+### Subagent context block
+
+Every subagent call must include the product understanding summary from Step 0.4 verbatim in `context`. This is the subagent's only knowledge of the product — it has no access to the parent's conversation.
+
+```
+context = """
+Product: [from 0.4]
+Type: [from 0.4]
+Industry: [from 0.4]
+Stage: [from 0.4]
+Primary users: [from 0.4]
+JTBD: [from 0.4]
+Journey context mode: [from 0.4]
+Critical journeys: [from 0.4]
+Scope: [from 0.4]
+Input: [the specific input this subagent is working with — URL / file paths / screenshots]
+Checklist: [site.md / app.md]
+"""
+```
+
+### Lane A — Rendered Experience Subagent
+
+```python
+delegate_task(
+    goal="""You are a Lane A UX auditor. Audit the rendered experience of this product.
+
+Load these skill files in order:
+  skill_view("ux-audit", "prompts/system.md")         # full audit procedure
+  skill_view("ux-audit", "checklists/site.md")         # or app.md per product type
+
+Work through every Lane A category in system.md Step 2:
+  IA, CONTENT, FORM, AUTH, A11Y, VISUAL, NAVIGATION, MOBILE, PERFORMANCE,
+  SEO, TRUST, PWA (if applicable),
+  FLOW (4-axis journey scores + TTFV + "what if" + "3 Days Later"),
+  EXCISE (Cooper's friction catalog),
+  GOODWILL (trust drains and builders),
+  DELIGHT (Norman's layers + delight signals),
+  NOTIFY (async UX),
+  VOICE (tone consistency).
+
+Then run the anti-slop check from system.md Step 3.
+
+Output format — return a structured finding list only (no full report):
+  [CODE-NNN] Title
+  - Score: [0-20] (UI:[0-4], Biz:[0-4], Reach:[0-4], Rec:[0-4], Comp:[0-4])
+  - Priority: P[0-3]
+  - Evidence: [specific page/element/screenshot]
+  - Fix: [specific actionable fix]
+  - Standard: [WCAG SC / Nielsen heuristic / etc.]
+
+Also return:
+  - Journey scores table (4-axis per journey + TTFV)
+  - Delight verdict (pass/fail + 2 named signals or absence)
+  - Goodwill summary (drains list + builders list)
+  - Anti-slop flags list (or "None found")
+  - Voice consistency verdict
+""",
+    context=context,
+    toolsets=["web", "browser", "vision", "file", "skills", "search", "todo"],
+)
+```
+
+### Lane B — Frontend Code Subagent
+
+Only dispatch if frontend code is provided.
+
+```python
+delegate_task(
+    goal="""You are a Lane B UX auditor. Audit the frontend code for UX-relevant issues.
+
+Load this skill file:
+  skill_view("ux-audit", "prompts/system.md")   # read Lane B section
+
+Work through every Lane B check in system.md Step 2:
+  Semantic HTML, ARIA correctness, focus management, 8-state component coverage,
+  performance code patterns (lazy-load on LCP, tabular-nums, 100vw, etc.),
+  anti-slop code checks (transition-all, z-index:9999, bounce easing, etc.).
+
+Output format — structured finding list only:
+  [CODE-NNN] Title
+  - Score: [0-20] (UI:[0-4], Biz:[0-4], Reach:[0-4], Rec:[0-4], Comp:[0-4])
+  - Priority: P[0-3]
+  - Evidence: [file:line or component name]
+  - Fix: [specific code fix]
+  - Standard: [WCAG SC / axe rule / etc.]
+  - Source: [Frontend]
+""",
+    context=context,
+    toolsets=["file", "skills", "search", "todo"],
+)
+```
+
+### Lane C — Backend Code Subagent
+
+Only dispatch if backend code is provided.
+
+```python
+delegate_task(
+    goal="""You are a Lane C UX auditor. Audit the backend code for UX-relevant patterns.
+
+Load this skill file:
+  skill_view("ux-audit", "prompts/system.md")   # read Lane C section
+
+Work through every Lane C check in system.md Step 2:
+  Error response format, auth/session expiry UX, rate limiting UX (429 + Retry-After),
+  server/client validation alignment, long-running operation handling.
+
+Output format — structured finding list only:
+  [CODE-NNN] Title
+  - Score: [0-20]
+  - Priority: P[0-3]
+  - Evidence: [file:line or endpoint name]
+  - Fix: [specific fix]
+  - Standard: [relevant standard]
+  - Source: [Backend]
+""",
+    context=context,
+    toolsets=["file", "skills", "search", "todo"],
+)
+```
+
+### Batch dispatch (parallel)
+
+When multiple lanes apply, dispatch all at once using the `tasks` array so they run concurrently:
+
+```python
+delegate_task(tasks=[
+    {"goal": "...Lane A goal...", "context": context, "toolsets": ["web", "browser", "vision", "file", "skills", "search", "todo"]},
+    {"goal": "...Lane B goal...", "context": context, "toolsets": ["file", "skills", "search", "todo"]},
+    {"goal": "...Lane C goal...", "context": context, "toolsets": ["file", "skills", "search", "todo"]},
+])
+```
+
+### Journey splitting (Lane A only, 3+ journeys)
+
+For complex SaaS products with many journeys, split Lane A into journey groups to avoid context saturation in a single subagent:
+
+```python
+delegate_task(tasks=[
+    {"goal": "Audit journeys 1-3 (sign-up, onboard, core task)... [Lane A instructions]", "context": context, "toolsets": [...]},
+    {"goal": "Audit journeys 4-6 (billing, settings, error recovery)... [Lane A instructions]", "context": context, "toolsets": [...]},
+])
+```
+
+Merge duplicate findings (same issue found by both) into a single entry — keep the higher score.
+
+### After subagents complete
+
+Collect all structured finding lists from subagents. Then:
+- De-duplicate: same issue flagged by multiple subagents → keep once with the highest score
+- Apply P0 override: any issue blocking sign-in, payment/billing, legal consent, or keyboard-only → force P0
+- Proceed to Step 5 to assemble the final report
+
+---
+
+## Step 2 — Lane Reference (Used by Subagents)
+
+Subagents load and follow these sections. Main agent does not run these directly.
 
 ### Lane A: URL / Screenshot (Rendered Experience)
 
