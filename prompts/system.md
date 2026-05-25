@@ -241,6 +241,8 @@ Then run the anti-slop check from system.md Step 3.
 
 CRITICAL RULE: Screenshots must ALWAYS be of the live web app or running app UI — never of audit reports, markdown files, terminal output, or any document. A screenshot of text is useless. The screenshot must show the actual broken UI element in its real context.
 
+BROWSER TOOL RULE: Always use the built-in `browser_navigate`, `browser_screenshot`, `browser_inject_js`, and `browser_click` tools for all browser interaction. NEVER run Playwright or Puppeteer via the terminal (`node -e "require('playwright')"`, `npx playwright`, etc.) — those Node packages are not installed and will always fail. If a browser tool returns an error, retry with the same built-in tool — do not fall back to terminal.
+
 For every P0 and P1 finding:
 1. Open the browser and navigate to the EXACT page where the issue exists (not the audit report, not a file, the actual app URL/localhost)
 2. If the app requires login — stop and ask the user for credentials before proceeding. Do not skip or screenshot a login wall.
