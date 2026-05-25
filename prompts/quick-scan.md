@@ -75,14 +75,37 @@ For every issue rated P1 or higher: inject the annotation snippet, screenshot th
 ### Trunk Test
 [Table with ✅/⚠️/❌ for each question]
 
+### Journey Snapshot
+Score the primary journey only. Use ✅/⚠️/❌ columns (not numeric scales).
+
+| Journey | Mode | value_delivery | task_completion | operating_cost | feedback_quality | TTFV |
+|---------|------|---------------|-----------------|---------------|-----------------|------|
+| [primary journey] | cold-start | ✅/⚠️/❌ | ✅/⚠️/❌ | ✅/⚠️/❌ | ✅/⚠️/❌ | [# clicks] |
+
 ### Top Issues (up to 10)
+
+Use P0/P1/P2/P3 headings only — no emoji (🔴🟠🟡) as heading substitutes.
+
 | # | Issue | Category | Priority | Fix | Screenshot |
 |---|-------|----------|----------|-----|------------|
 | 1 | ... | A11Y | P1 | [one-sentence fix] | `~/audits/screenshots/[slug]-A11Y-001.png` or N/A |
 ...
 
+### Core Web Vitals
+| Metric | Value | Status |
+|--------|-------|--------|
+| TTFB | [observed or "Not measured"] | ✅/⚠️/❌ |
+| LCP | [observed or "Not measured"] | ✅/⚠️/❌ |
+| CLS | [observed or "Not measured"] | ✅/⚠️/❌ |
+| INP | [observed or "Not measured"] | ✅/⚠️/❌ |
+
+_If screenshot-only: "Not measured — requires URL or RUM data."_
+
 ### AI-Slop Flags
 [List any detected or "None found"]
+
+### Voice Verdict
+[One sentence: is tone consistent across marketing, UI, and error states? Or "Cannot assess — screenshot-only audit."]
 
 ### Immediate Wins (< 1 hour each)
 [Bullet list]

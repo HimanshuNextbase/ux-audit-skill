@@ -245,7 +245,7 @@ For every P0 and P1 finding:
 1. Open the browser and navigate to the EXACT page where the issue exists (not the audit report, not a file, the actual app URL/localhost)
 2. If the app requires login — stop and ask the user for credentials before proceeding. Do not skip or screenshot a login wall.
 3. Scroll to and visually locate the specific broken element on the page
-4. Inject this JS to mark the element with a red outline and finding ID badge:
+4. Inject this JS to annotate the element AND get its viewport coordinates for cropping:
    ```js
    (() => {
      const el = document.querySelector('[YOUR_SELECTOR]');
@@ -257,9 +257,19 @@ For every P0 and P1 finding:
      badge.textContent = 'FINDING_ID';
      badge.style.cssText = 'position:fixed;top:12px;right:12px;background:#FF3B30;color:#fff;padding:4px 10px;font:bold 13px monospace;border-radius:4px;z-index:999999;';
      document.body.appendChild(badge);
+     const r = el.getBoundingClientRect();
+     const pad = 120;
+     console.log(JSON.stringify({
+       clip: {
+         x: Math.max(0, r.left - pad),
+         y: Math.max(0, r.top - pad),
+         width: Math.min(window.innerWidth, r.width + pad * 2),
+         height: Math.min(window.innerHeight, r.height + pad * 2)
+       }
+     }));
    })();
    ```
-5. Take a screenshot of the browser viewport (the live page with the highlighted element visible)
+5. Take a **viewport-only** screenshot (NOT full page). Use the `clip` coordinates from the JS output if the screenshot tool supports a clip/region parameter. If not, take a regular viewport screenshot — the element will be centered by `scrollIntoView`. Never capture the full page; viewport captures are enough and stay under 500KB.
 6. Save to `~/audits/screenshots/[slug]-[FINDING_ID].png`
 7. Reference the saved path in the finding's Screenshot field
 
@@ -293,11 +303,17 @@ Implementation field — MANDATORY on every single finding, no exceptions:
 RULE: A finding without an Implementation is incomplete. Do not submit until every finding has one.
 
 Also return:
-  - Journey scores table (4-axis per journey + TTFV)
-  - Delight verdict (pass/fail + 2 named signals or absence)
-  - Goodwill summary (drains list + builders list)
-  - Anti-slop flags list (or "None found")
-  - Voice consistency verdict
+
+Journey scores — use EXACTLY this format (✅/⚠️/❌ columns, not numeric scales):
+| Journey | Mode | value_delivery | task_completion | operating_cost | feedback_quality | TTFV |
+|---------|------|---------------|-----------------|---------------|-----------------|------|
+| [name]  | cold-start | ✅/⚠️/❌ | ✅/⚠️/❌ | ✅/⚠️/❌ | ✅/⚠️/❌ | [# clicks] |
+
+Delight verdict — pass/fail + 2 named signals or explicit "none found"
+Goodwill summary — drains list + builders list
+CWV table — TTFB/LCP/CLS/INP observed values or "Not measured"
+Anti-slop flags list — or "None found"
+Voice consistency verdict — one sentence minimum, even if "Cannot assess — no URL"
 """,
     context=context,
     toolsets=["web", "browser", "vision", "file", "terminal", "skills", "search", "todo"],
