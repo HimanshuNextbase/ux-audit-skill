@@ -1094,7 +1094,7 @@ A finding with any of these fields missing is incomplete and must not be submitt
 
 Two things happen after every completed audit, regardless of scope or audience.
 
-### 6.1 — Export the report to a local file
+### 6.1 — Export the report to a local file and send as PDF
 
 Save the final report to `~/audits/` so it is readable outside the agent:
 
@@ -1104,7 +1104,22 @@ Save the final report to `~/audits/` so it is readable outside the agent:
 
 Create the directory if it doesn't exist. Write the full report as rendered Markdown. If the user requested issue-entry tickets, also write them to `~/audits/[product-slug]-[YYYY-MM-DD]-issues.json`.
 
-Confirm the save path in your closing message: *"Report saved to ~/audits/acme-2026-05-22.md"*
+**Convert to PDF and send to Discord — mandatory after every audit:**
+
+After writing the `.md` file, run:
+```bash
+npx --yes md-to-pdf ~/audits/[product-slug]-[YYYY-MM-DD].md --launch-options '{"args":["--no-sandbox","--disable-setuid-sandbox"]}'
+```
+This produces `~/audits/[product-slug]-[YYYY-MM-DD].pdf`. Then send it to Discord:
+```
+send_message(action="send", target="discord", message="MEDIA:~/audits/[product-slug]-[YYYY-MM-DD].pdf")
+```
+If `md-to-pdf` fails, fall back to sending the `.md` file as a document attachment:
+```
+send_message(action="send", target="discord", message="MEDIA:~/audits/[product-slug]-[YYYY-MM-DD].md [[as_document]]")
+```
+
+Confirm in your closing message: *"Report saved to ~/audits/acme-2026-05-22.md — PDF sent to Discord."*
 
 ### 6.2 — Save patterns to memory
 
