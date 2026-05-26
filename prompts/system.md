@@ -237,6 +237,29 @@ Work through every Lane A category in system.md Step 2:
 
 Then run the anti-slop check from system.md Step 3.
 
+**CWV Measurement — Run immediately after first navigation, before any interaction:**
+
+After `browser_navigate` to the target URL, before scrolling or clicking anything, run this observer (LCP entries are discarded once the user interacts):
+
+```js
+(async () => {
+  const lcp = await new Promise(resolve => {
+    let last;
+    const ob = new PerformanceObserver(list => { last = list.getEntries().at(-1); });
+    ob.observe({type: 'largest-contentful-paint', buffered: true});
+    setTimeout(() => { ob.disconnect(); resolve(last); }, 3000);
+  });
+  const nav = performance.getEntriesByType('navigation')[0];
+  console.log(JSON.stringify({
+    lcp_ms: lcp ? Math.round(lcp.startTime) : null,
+    lcp_element: lcp?.element?.tagName ?? null,
+    ttfb_ms: nav ? Math.round(nav.responseStart) : null,
+  }));
+})();
+```
+
+Record values in the CWV table. If `lcp_ms` is null, note "LCP not captured — run Lighthouse for accurate measurement." Do not leave LCP blank.
+
 **Screenshot evidence — MANDATORY for every P0/P1 finding when a URL is available:**
 
 CRITICAL RULE: Screenshots must ALWAYS be of the live web app or running app UI — never of audit reports, markdown files, terminal output, or any document. A screenshot of text is useless. The screenshot must show the actual broken UI element in its real context.
@@ -287,18 +310,48 @@ For every P0 and P1 finding:
 6. Save to `~/audits/screenshots/[slug]-[FINDING_ID].png`
 7. Reference the saved path in the finding's Screenshot field
 
+**Mobile viewport — mandatory for any finding that affects mobile layout or mobile-only UI:**
+
+After the desktop screenshot, resize to 390px and take a mobile screenshot:
+```js
+(() => {
+  // Inject meta viewport if missing, then note the effective width
+  const vp = document.querySelector('meta[name=viewport]');
+  console.log(JSON.stringify({viewport: vp?.content ?? 'none set', innerWidth: window.innerWidth}));
+})();
+```
+Then navigate to the same URL with a mobile User-Agent simulation (use `browser_navigate` with viewport width set to 390 if the tool supports it, or inject `document.documentElement.style.maxWidth='390px'` as a rough proxy). Take the screenshot and save as `~/audits/screenshots/[slug]-[FINDING_ID]-mobile.png`. A mobile-specific finding without a mobile screenshot is incomplete evidence.
+
 For P2/P3: skip annotation. Note "Screenshot: N/A — P2/P3".
 If app requires auth and no credentials provided: note "Screenshot: N/A — requires login credentials".
 
 Output format — return a structured finding list only (no full report):
-  [CODE-NNN] Title
+
+  ### [CODE-NNN] Title
   - Score: [0-20] (UI:[0-4], Biz:[0-4], Reach:[0-4], Rec:[0-4], Comp:[0-4])
   - Priority: P[0-3]
-  - Evidence: [specific page/element/screenshot ref]
-  - Screenshot: ~/audits/screenshots/[slug]-[CODE-NNN].png (or "N/A — no URL / P2+")
-  - Fix: [one sentence — what to change and why]
-  - Implementation: [developer-ready detail — see types below]
-  - Standard: [WCAG SC / Nielsen heuristic / etc.]
+  - Source: [URL] / [Screenshot] / [Frontend] / [Backend]
+  - Evidence: [exact file:line, CSS selector, or endpoint — never vague "relevant component"]
+  - Impact: [who is affected and how — e.g. "all keyboard-only users cannot tab to the search input"]
+  - Repro steps:
+      1. [user action]
+      2. [user action]
+      3. [observe the broken state]
+  - Expected: [what should happen]
+  - Actual: [what actually happens]
+  - Screenshot: ~/audits/screenshots/[slug]-[CODE-NNN].png (or "N/A — P2+ / no URL / login required")
+  - Fix: [one sentence — what to change and why, written for a PM or designer]
+  - Implementation: [developer-ready detail — code snippet or structural description]
+    — A11Y findings: always include a DOM diff showing actual vs. expected markup:
+        DOM (actual):   <input placeholder="Search programs">
+        DOM (expected): <label for="prog-search">Search creator programs</label>
+                        <input id="prog-search" name="search" placeholder="Search programs">
+    — API/backend findings: always include request/response evidence:
+        GET /api/programs/example-id
+        Expected: 503 { "message": "Service unavailable, retry in 30s", "retryAfter": 30 }
+        Actual:   null → notFound() → UI renders generic 404 page
+  - Files affected: [src/components/Foo/index.tsx:73-82, src/app/go/[id]/page.tsx — specific, not "related files"]
+  - Standard: [WCAG 2.2 SC X.X.X / Nielsen heuristic N / Core Web Vitals / etc.]
 
 Implementation field — MANDATORY on every single finding, no exceptions:
   • Code issue (A11Y, VISUAL, MOBILE, PERF, FORM, AUTH): before/after code snippet
@@ -350,17 +403,46 @@ Work through every Lane B check in system.md Step 2:
   performance code patterns (lazy-load on LCP, tabular-nums, 100vw, etc.),
   anti-slop code checks (transition-all, z-index:9999, bounce easing, etc.).
 
+**Lighthouse audit — run if a local dev server is available:**
+
+```bash
+npx --yes lighthouse http://localhost:3000 --output json --quiet \
+  --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage" 2>/dev/null \
+| python3 -c "
+import sys,json
+d=json.load(sys.stdin)
+cats=d.get('categories',{})
+au=d.get('audits',{})
+lcp=au.get('largest-contentful-paint',{}).get('numericValue')
+tbt=au.get('total-blocking-time',{}).get('numericValue')
+cls=au.get('cumulative-layout-shift',{}).get('numericValue')
+fails=[k for k,v in au.items() if isinstance(v.get('score'),float) and v['score']==0 and v.get('scoreDisplayMode')=='binary'][:12]
+print(json.dumps({'perf':cats.get('performance',{}).get('score'),'a11y':cats.get('accessibility',{}).get('score'),'lcp_ms':round(lcp) if lcp else None,'tbt_ms':round(tbt) if tbt else None,'cls':round(cls,3) if cls else None,'a11y_failures':fails}))
+"
+```
+
+Record perf and a11y scores plus LCP/TBT/CLS in the CWV table. Each `a11y_failures` entry is a candidate finding — verify in code before including. If Lighthouse is unavailable, note "Lighthouse: not available — CWV measured via Performance API only."
+
 Output format — structured finding list only:
-  [CODE-NNN] Title
+
+  ### [CODE-NNN] Title
   - Score: [0-20] (UI:[0-4], Biz:[0-4], Reach:[0-4], Rec:[0-4], Comp:[0-4])
   - Priority: P[0-3]
-  - Evidence: [file:line or component name]
-  - Fix: [one sentence — what to change and why]
-  - Implementation: [before/after code snippet — always include for code issues]
-    Before: [current code]
-    After:  [corrected code]
-  - Standard: [WCAG SC / axe rule / etc.]
   - Source: [Frontend]
+  - Evidence: [exact file:line]
+  - Impact: [who is affected and how]
+  - Repro steps:
+      1. [step]
+      2. [step]
+      3. [observe broken state]
+  - Expected: [what the correct behavior is]
+  - Actual: [what the code currently does]
+  - Fix: [one sentence — what to change and why]
+  - Implementation:
+      DOM (actual) / Before:   [current code or markup]
+      DOM (expected) / After:  [corrected code or markup]
+  - Files affected: [exact file:line references]
+  - Standard: [WCAG SC / axe rule / etc.]
 """,
     context=context,
     toolsets=["file", "skills", "search", "todo"],
@@ -383,16 +465,29 @@ Work through every Lane C check in system.md Step 2:
   server/client validation alignment, long-running operation handling.
 
 Output format — structured finding list only:
-  [CODE-NNN] Title
-  - Score: [0-20]
+
+  ### [CODE-NNN] Title
+  - Score: [0-20] (UI:[0-4], Biz:[0-4], Reach:[0-4], Rec:[0-4], Comp:[0-4])
   - Priority: P[0-3]
-  - Evidence: [file:line or endpoint name]
-  - Fix: [one sentence — what to change and why]
-  - Implementation: [corrected response shape or endpoint pattern — always include]
-    Before: [current behavior]
-    After:  [corrected behavior]
-  - Standard: [relevant standard]
   - Source: [Backend]
+  - Evidence: [file:line and endpoint — e.g. src/app/api/proxy/[...path]/route.ts:15-29 → GET /api/proxy/*]
+  - Impact: [user-visible effect of this backend behavior]
+  - Repro steps:
+      1. [trigger condition — e.g. "fetch a non-existent program ID"]
+      2. [observe the server response]
+      3. [observe the resulting UI state]
+  - Expected:
+      [HTTP method] [endpoint]
+      Response: [status] { "message": "...", "field": "...", "retryAfter": N }
+  - Actual:
+      [HTTP method] [endpoint]
+      Response: [status] [actual body — e.g. null → notFound() / empty body / raw stack trace]
+  - Fix: [one sentence — what to change and why]
+  - Implementation:
+      Before: [current code or response shape]
+      After:  [corrected code or response shape]
+  - Files affected: [exact file:line]
+  - Standard: [relevant standard — WCAG, OWASP ASVS, RFC 7807 Problem Details, etc.]
 """,
     context=context,
     toolsets=["file", "skills", "search", "todo"],
@@ -674,11 +769,17 @@ Most AI-generated UIs achieve only the behavioral layer (it works). Flag if visc
 
 Async events (background jobs, emails sent, imports completed, file exports ready) are where most SaaS products fail silently.
 
+**Scope: NOTIFY applies to async/background operations only.** Standard navigation — including external link redirects, "Apply" buttons that open partner sites, and page-to-page transitions — is NOT a NOTIFY issue. Do not flag expected navigation behavior as NOTIFY. Only flag:
+- Background work the user cannot observe (file export, email send, import job)
+- Silent tracking or analytics calls whose failure changes user outcome
+- Delayed consequences the user has no signal for ("we'll email you when it's ready" with no confirmation the email was queued)
+
 - **Proactive vs reactive:** Does the system notify users when async work completes, or must users know to check? Proactive notification (in-app, email, push) is pass; "check back later" is fail.
 - **Background task feedback:** Long-running operations (>10s) show progress, estimated time, or allow cancellation — never a frozen screen.
 - **Async button behavior:** Action buttons show a loading state and disable themselves on click to prevent duplicate submissions.
 - **Event-driven state:** If another user's action changes shared data (a colleague edits a doc, a payment status changes), does the current user's view update or serve stale data?
 - **Notification permission timing:** Push/email permission requested AFTER user has seen value — never on first page load.
+- **External link navigation:** An "Apply" or "Visit" button that opens an external site is expected behavior. Flag it as A11Y if the link lacks `aria-label="... (opens in new tab)"` when it opens a new tab, but do not score it as a NOTIFY failure unless the redirect itself can silently fail and leave the user stranded with no fallback URL.
 
 #### VOICE — Tone Consistency
 
@@ -843,16 +944,32 @@ Use the appropriate template:
 - Include a Quick Wins section (issues fixable in under 1 hour)
 - End with a Roadmap: P0 → P1 sprint items → P2 backlog → P3 polish
 
-**Fix vs Implementation — two distinct fields, both required:**
+**Required finding fields — every field is mandatory, no exceptions:**
 
-Every finding must have both:
-- **Fix** — one sentence: what is wrong and what needs to change. Written for the product manager or designer who decides whether to act.
-- **Implementation** — the developer-ready detail. Written for the engineer who will do the work. Always include one of:
-  - Code issues → before/after code block (HTML, CSS, JS, ARIA)
-  - Copy issues → before/after copy rewrite ("Submit" → "Create your account")
-  - Structural issues → plain description of the structure change ("Collapse the 4-screen wizard into a single form; only email + password are required")
-  - Backend issues → corrected response shape or endpoint pattern
-  - Design constraint issues → the specific rule + implementation hint ("touch target ≥ 44×44 CSS px — expand via `::before` pseudo-element overlay, no visual change needed")
+Each finding in the report must include all of the following in this order:
+
+| Field | Content |
+|-------|---------|
+| **Evidence** | Exact file:line, CSS selector, or endpoint — never "relevant component" |
+| **Impact** | Who is affected and how severely |
+| **Repro steps** | Numbered steps from user's perspective to observe the broken state |
+| **Expected** | What the correct behavior is |
+| **Actual** | What currently happens |
+| **Screenshot** | Saved path, or "N/A — [reason]" |
+| **Fix** | One sentence for PM/designer — what is wrong and what must change |
+| **Implementation** | Developer-ready detail — code, copy, or structure (see below) |
+| **Files affected** | Specific file:line list — not "related files" |
+| **Standard** | WCAG SC, Nielsen heuristic, CWV threshold, or other published standard |
+
+**Implementation field rules:**
+- Code issues (A11Y, VISUAL, MOBILE, PERF, FORM, AUTH) → before/after code block
+  - A11Y findings: always show DOM diff — broken markup vs. correct markup with proper labels/roles
+  - API/backend findings: always show request + broken response vs. correct response shape
+- Copy issues (CONTENT, VOICE, GOODWILL) → before/after copy rewrite
+- Structural issues (IA, FLOW, EXCISE, NOTIFY) → plain description of the structural change
+- Design constraint issues → the specific rule + implementation hint
+
+A finding with any of these fields missing is incomplete and must not be submitted.
 
 ---
 
