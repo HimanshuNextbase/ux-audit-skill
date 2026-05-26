@@ -1065,10 +1065,16 @@ Use the appropriate template:
 - End with a Roadmap: P0 → P1 sprint items → P2 backlog → P3 polish
 
 **Report cleanliness rules — do NOT include in the final report:**
-- The Step 3 self-critique table (Philosophy / Hierarchy / Execution / Specificity / Restraint / Variety scores) — this is an internal QA check, not a client-facing section. Run it silently to calibrate the AI-SLOP finding, then omit the table from the report entirely.
-- NOTIFY section content that is entirely "Not testable" — if all three NOTIFY checks (proactive notification, background task feedback, async button behavior) are untestable on this audit, skip the NOTIFY section completely or replace with a single sentence: "Async generation UX not testable — no media submission was completed in this audit." Do not list three "Not testable" lines.
-- FLOW "What-if failures tested" as a separate section — fold these observations into the FLOW findings themselves, not a separate table.
-- EXCISE section if it only repeats findings already stated elsewhere — only include EXCISE if it identifies a Cooper friction pattern not already captured in a finding.
+- The Step 3 self-critique table (Philosophy / Hierarchy / Execution / Specificity / Restraint / Variety scores) — internal only. Run it silently to calibrate the AI-SLOP finding, then omit the table from the report entirely.
+- NOTIFY section when entirely untestable — skip it or write one sentence max: "Async UX not testable without a completed generation run."
+- FLOW "What-if failures tested" as a separate section — fold into the FLOW findings themselves.
+- EXCISE section if it only repeats findings already stated elsewhere — only include if it names a new Cooper friction pattern not captured in any finding.
+- Remediation Plan table — this duplicates the Roadmap. Do NOT include a separate Remediation Plan table. The Roadmap (P0/P1/P2/P3 lists) is sufficient.
+- Retest Criteria section — fold into the Roadmap items as one-line acceptance criteria, not a separate section.
+- DELIGHT, GOODWILL, VOICE — keep these but limit to 3–5 lines each. Do not expand into sub-sections.
+- Supplementary sections (EXCISE, SEO, TRUST Security Baseline, AI-SLOP) that have no findings — either skip entirely or write one sentence ("No issues found").
+
+**Target report length: 400–550 lines max for a typical full audit (6–10 findings). Every line must earn its place.**
 
 **Required finding fields — every field is mandatory, no exceptions:**
 
@@ -1115,17 +1121,17 @@ Create the directory if it doesn't exist. Write the full report as rendered Mark
 
 **Convert to PDF and send to Discord — mandatory after every audit:**
 
-Screenshot images in the report MUST use full absolute paths (`/home/brew/audits/screenshots/...`) written as markdown image syntax (`![ID](path)`) so they embed in the PDF. The `~/` tilde prefix does NOT work in md-to-pdf — always expand it to `/home/brew/`.
+Screenshot images in the report MUST use full absolute paths (`/home/brew/audits/screenshots/...`) written as markdown image syntax (`![ID](path)`) so they embed in the PDF. The `~/` tilde prefix does NOT work — always expand to `/home/brew/`.
 
-After writing the `.md` file, run:
+After writing the `.md` file, run the PDF generator script (it handles base64 image embedding and compact styling automatically):
 ```bash
-npx --yes md-to-pdf /home/brew/audits/[product-slug]-[YYYY-MM-DD].md --launch-options '{"args":["--no-sandbox","--disable-setuid-sandbox"]}'
+bash /home/brew/audits/gen-pdf.sh /home/brew/audits/[product-slug]-[YYYY-MM-DD].md
 ```
-This produces `/home/brew/audits/[product-slug]-[YYYY-MM-DD].pdf`. Then send it to Discord:
+This produces `/home/brew/audits/[product-slug]-[YYYY-MM-DD].pdf` with all screenshots embedded inline. Then send it to Discord:
 ```
 send_message(action="send", target="discord", message="MEDIA:/home/brew/audits/[product-slug]-[YYYY-MM-DD].pdf")
 ```
-If `md-to-pdf` fails, fall back to sending the `.md` file as a document attachment:
+If the script fails, fall back to sending the `.md` file as a document attachment:
 ```
 send_message(action="send", target="discord", message="MEDIA:/home/brew/audits/[product-slug]-[YYYY-MM-DD].md [[as_document]]")
 ```

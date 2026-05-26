@@ -240,20 +240,6 @@ Specific additive ideas grounded in observed user needs — not a wishlist.
 
 ---
 
-## Remediation Plan
-
-| Initiative | Problem | Target outcome | Priority | Owner | Fix type | Acceptance criteria | Verify |
-|-----------|---------|---------------|----------|-------|----------|--------------------|----|
-| [sprint/project] | [what users can't do] | [what success looks like] | P[0–3] | [team] | [frontend/design/content/etc.] | [observable pass conditions] | [tool rerun / manual / usability retest] |
-
----
-
-## Retest Criteria
-
-[List which issues will be verified by automated tool rerun vs manual check vs usability retest. Specify the exact Playwright scenario or Lighthouse assertion to use.]
-
----
-
 ## Tools Used
 
 | Tool | Purpose | Result |
