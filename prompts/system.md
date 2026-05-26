@@ -325,14 +325,16 @@ For every P0 and P1 finding:
    ```
 5. Take a **viewport-only** screenshot (NOT full page). Use the `clip` coordinates from the JS output if the screenshot tool supports a clip/region parameter. If not, take a regular viewport screenshot — the element will be centered by `scrollIntoView`. Never capture the full page; viewport captures are enough and stay under 500KB.
 6. Save to `~/audits/screenshots/[slug]-[FINDING_ID].png`
-7. Reference the saved path in the finding's Screenshot field
+7. Reference the saved path in the finding's Screenshot field using embedded markdown image syntax so it appears inline in the PDF:
+   `![FINDING_ID](/home/brew/audits/screenshots/[slug]-[FINDING_ID].png)`
+   Use the full absolute path (starting with `/home/brew/`) — NOT `~/` tilde paths, which md-to-pdf cannot resolve.
 
 **Analogous state screenshots — for failure paths that cannot be forced:**
 If a finding describes a failure state you cannot trigger live (e.g., API error → empty state, fallback copy on metadata failure), capture the closest observable equivalent:
 - The zero-results empty state from a nonsense search (shows exact UI the user would see during failure)
 - The gated screen that blocks the flow (shows the interruption point)
 - The component that contains the broken code (highlighted with the annotation JS)
-Label the screenshot clearly: `Screenshot: ~/audits/screenshots/[slug]-[ID].png — analogous state: [what it shows and why the exact failure state was not forced]`
+Label the screenshot clearly: `![CODE-NNN](/home/brew/audits/screenshots/[slug]-[ID].png) — analogous state: [what it shows and why the exact failure state was not forced]`
 Never write N/A for a code-only finding if any related visible UI state exists and is reachable.
 
 **Mobile viewport — mandatory for any finding that affects mobile layout or mobile-only UI:**
@@ -364,13 +366,14 @@ Output format — return a structured finding list only (no full report):
       3. [observe the broken state]
   - Expected: [what should happen]
   - Actual: [what actually happens]
-  - Screenshot: ~/audits/screenshots/[slug]-[CODE-NNN].png
+  - Screenshot: ![CODE-NNN](/home/brew/audits/screenshots/[slug]-[CODE-NNN].png)
       Allowed values:
-      • Actual path — annotated UI element in browser
-      • [path] — analogous state: [description of what is shown and why exact state was not forced]
+      • `![CODE-NNN](/home/brew/audits/screenshots/[slug]-[CODE-NNN].png)` — real annotated screenshot (use full absolute path, NOT ~/tilde)
+      • `![CODE-NNN](/home/brew/audits/screenshots/[slug]-[CODE-NNN].png) — analogous state: [description]` — closest observable equivalent
       • N/A — login required and no credentials provided
       • N/A — P2/P3 finding (skip annotation for lower priority)
       "N/A — code-only finding" is NOT acceptable for P0/P1 if any related visible UI exists and is reachable
+      NEVER use ~/tilde paths — always use /home/brew/audits/screenshots/ prefix so the image embeds in the PDF.
   - Fix: [one sentence — what to change and why, written for a PM or designer]
   - Implementation: [developer-ready detail — code snippet or structural description]
     — FORM findings: always include a DOM diff showing actual vs. expected markup:
@@ -1061,6 +1064,12 @@ Use the appropriate template:
 - Include a Quick Wins section (issues fixable in under 1 hour)
 - End with a Roadmap: P0 → P1 sprint items → P2 backlog → P3 polish
 
+**Report cleanliness rules — do NOT include in the final report:**
+- The Step 3 self-critique table (Philosophy / Hierarchy / Execution / Specificity / Restraint / Variety scores) — this is an internal QA check, not a client-facing section. Run it silently to calibrate the AI-SLOP finding, then omit the table from the report entirely.
+- NOTIFY section content that is entirely "Not testable" — if all three NOTIFY checks (proactive notification, background task feedback, async button behavior) are untestable on this audit, skip the NOTIFY section completely or replace with a single sentence: "Async generation UX not testable — no media submission was completed in this audit." Do not list three "Not testable" lines.
+- FLOW "What-if failures tested" as a separate section — fold these observations into the FLOW findings themselves, not a separate table.
+- EXCISE section if it only repeats findings already stated elsewhere — only include EXCISE if it identifies a Cooper friction pattern not already captured in a finding.
+
 **Required finding fields — every field is mandatory, no exceptions:**
 
 Each finding in the report must include all of the following in this order:
@@ -1106,20 +1115,22 @@ Create the directory if it doesn't exist. Write the full report as rendered Mark
 
 **Convert to PDF and send to Discord — mandatory after every audit:**
 
+Screenshot images in the report MUST use full absolute paths (`/home/brew/audits/screenshots/...`) written as markdown image syntax (`![ID](path)`) so they embed in the PDF. The `~/` tilde prefix does NOT work in md-to-pdf — always expand it to `/home/brew/`.
+
 After writing the `.md` file, run:
 ```bash
-npx --yes md-to-pdf ~/audits/[product-slug]-[YYYY-MM-DD].md --launch-options '{"args":["--no-sandbox","--disable-setuid-sandbox"]}'
+npx --yes md-to-pdf /home/brew/audits/[product-slug]-[YYYY-MM-DD].md --launch-options '{"args":["--no-sandbox","--disable-setuid-sandbox"]}'
 ```
-This produces `~/audits/[product-slug]-[YYYY-MM-DD].pdf`. Then send it to Discord:
+This produces `/home/brew/audits/[product-slug]-[YYYY-MM-DD].pdf`. Then send it to Discord:
 ```
-send_message(action="send", target="discord", message="MEDIA:~/audits/[product-slug]-[YYYY-MM-DD].pdf")
+send_message(action="send", target="discord", message="MEDIA:/home/brew/audits/[product-slug]-[YYYY-MM-DD].pdf")
 ```
 If `md-to-pdf` fails, fall back to sending the `.md` file as a document attachment:
 ```
-send_message(action="send", target="discord", message="MEDIA:~/audits/[product-slug]-[YYYY-MM-DD].md [[as_document]]")
+send_message(action="send", target="discord", message="MEDIA:/home/brew/audits/[product-slug]-[YYYY-MM-DD].md [[as_document]]")
 ```
 
-Confirm in your closing message: *"Report saved to ~/audits/acme-2026-05-22.md — PDF sent to Discord."*
+Confirm in your closing message: *"Report saved to /home/brew/audits/acme-2026-05-22.md — PDF with screenshots sent to Discord."*
 
 ### 6.2 — Save patterns to memory
 

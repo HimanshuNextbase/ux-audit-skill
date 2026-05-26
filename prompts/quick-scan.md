@@ -88,7 +88,7 @@ Use P0/P1/P2/P3 headings only — no emoji (🔴🟠🟡) as heading substitutes
 
 | # | Issue | Category | Priority | Fix | Screenshot |
 |---|-------|----------|----------|-----|------------|
-| 1 | ... | VISUAL | P1 | [one-sentence fix] | `~/audits/screenshots/[slug]-VISUAL-001.png` or N/A |
+| 1 | ... | VISUAL | P1 | [one-sentence fix] | ![VISUAL-001](/home/brew/audits/screenshots/[slug]-VISUAL-001.png) or N/A |
 ...
 
 ### Core Web Vitals
