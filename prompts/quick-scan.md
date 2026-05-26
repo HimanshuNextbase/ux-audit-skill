@@ -113,6 +113,18 @@ _If screenshot-only: "Not measured — requires URL or RUM data."_
 ### Cannot Verify (screenshot-only)
 [List items that require URL or code to confirm — omit section if URL was provided]
 
+### UX Opportunities (top 2)
+Two specific, product-grounded improvements — not bugs, not generic advice:
+
+| # | Opportunity | Type | Effort |
+|---|------------|------|--------|
+| 1 | [Specific improvement for this product] | Flow / Conversion / Discoverability / Hierarchy | Low / Med / High |
+| 2 | [Specific improvement for this product] | Flow / Conversion / Discoverability / Hierarchy | Low / Med / High |
+
+### Best New Feature Idea
+One specific additive feature idea grounded in an observed user need:
+> **[Feature name]** — [1-2 sentence description of what it does, why users need it, and rough effort]
+
 ### Verdict
 [2–3 sentences: overall assessment and single most important fix]
 ```

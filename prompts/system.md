@@ -245,6 +245,15 @@ Work through every Lane A category in system.md Step 2:
 
 Then run the anti-slop check from system.md Step 3.
 
+Then run the UX Advisory pass from system.md Step 3.5:
+  FLOW SIMPLIFICATION — can any critical journey be shorter?
+  CONVERSION MOMENTS — where will users hesitate or leave?
+  FEATURE DISCOVERABILITY — what is hidden that should be obvious?
+  INFORMATION HIERARCHY — is the most important thing most prominent?
+  EMPTY & ZERO STATES — do they guide or just inform?
+  PATTERN UPGRADE — what do best-in-class products do that this one doesn't?
+  NEW FEATURE IDEAS — 2–4 specific additive ideas grounded in observed user needs.
+
 **CWV Measurement — Run immediately after first navigation, before any interaction:**
 
 After `browser_navigate` to the target URL, before scrolling or clicking anything, run this observer (LCP entries are discarded once the user interacts):
@@ -403,6 +412,10 @@ Goodwill summary — drains list + builders list
 CWV table — TTFB/LCP/CLS/INP observed values or "Not measured"
 Anti-slop flags list — or "None found"
 Voice consistency verdict — one sentence minimum, even if "Cannot assess — no URL"
+
+UX Advisory — always include, even for quick audits:
+  UX-OPP-001 through UX-OPP-NNN — flow simplification, conversion moments, discoverability, hierarchy, empty states, pattern upgrades (3–6 total, specific to this product)
+  IDEA-001 through IDEA-NNN — new feature ideas grounded in observed user needs (2–4 total)
 """,
     context=context,
     toolsets=["web", "browser", "vision", "file", "terminal", "skills", "search", "todo"],
@@ -901,6 +914,115 @@ Any axis scoring < 3 = flag as AI-slop risk.
 
 ---
 
+## Step 3.5 — UX Advisory: Flow & Experience Suggestions
+
+After the issue checklist and anti-slop check, run a forward-looking advisory pass. This is separate from findings — it is not about what is broken, it is about what could be meaningfully better.
+
+**Purpose:** Give the product team specific, actionable ideas for improving user experience — better flows, simpler journeys, smarter patterns — even when nothing is technically broken.
+
+**Rule:** Every suggestion must be specific to this product. Generic advice ("improve onboarding") is not a suggestion. A suggestion names a specific flow, screen, or pattern and describes the improved version concretely.
+
+### Advisory Categories
+
+**FLOW SIMPLIFICATION — Can this journey be shorter?**
+For each critical journey, ask: what is the minimum number of steps to reach the user's goal? If the current flow takes more steps than that, identify the gap and describe the simplified version.
+- Map: current steps → minimum possible steps → what to remove or combine
+- Example: "Sign-up currently requires 4 screens. Email + password is all that's needed — company and profile can be auto-detected or collected post-onboarding. Collapse to 1 screen."
+
+**CONVERSION MOMENTS — Where will users hesitate or leave?**
+Identify the 2–3 moments in the primary journey where a user's confidence will be tested before they commit:
+- What question will they ask themselves at this moment? ("Is this safe to buy?" / "Will I be locked in?")
+- What signal is the product giving them right now?
+- What signal should it give instead?
+- Example: "On the paid-agent detail page, users ask 'what happens if this doesn't work?' The page shows no refund or trial signal. Adding a one-line 'Refund policy' link directly below the Buy CTA answers this at the exact moment of doubt."
+
+**FEATURE DISCOVERABILITY — What is hidden that should be obvious?**
+Identify features, options, or information that exist but are not surfaced where users need them:
+- A filter that exists but is buried 2 scrolls below the fold
+- A free tier or trial that only appears on the pricing page
+- A search shortcut that expert users would want but new users never find
+Example: "The `?sort=price_asc` URL param works but there is no price sort in the visible filter UI — only 'Most Popular.' Price-conscious buyers will leave before finding it."
+
+**INFORMATION HIERARCHY — Is the most important thing most prominent?**
+Check whether each key page answers the user's primary question first:
+- What is the user's primary question on this page?
+- What does the page lead with?
+- Are those the same thing?
+Example: "On the agent detail page the user's primary question is 'What exactly does this agent do and what does it output?' The page leads with hero animation. The 'Before vs After' section — which answers the question — is 4 scrolls down."
+
+**EMPTY & ZERO STATES — Do they guide, not just inform?**
+Check every empty or zero state in the audited flows:
+- Does it tell the user what to do next?
+- Does it communicate why the state is empty?
+- Does it offer an action, not just a label?
+Example: "Empty search results say 'No agents found.' Better: 'No agents match your filters — try removing the Free Only filter or browse all 38 agents.'"
+
+**PATTERN UPGRADE — What do best-in-class products in this category do that this product doesn't?**
+Name 1–2 specific patterns from comparable products (app stores, marketplaces, SaaS tools) that would directly apply here. Be specific — name the pattern and describe how to apply it to this product's exact context.
+Example: "GitHub Marketplace shows 'Works with your current plan' badges on every listing. AgentPlace could show 'Compatible with OpenClaw v2+' on agent cards — buyers would know compatibility before clicking in."
+
+**NEW FEATURE IDEAS — What new capability would meaningfully improve the user's experience?**
+Based on what you observed about the users' goals and the product's current gaps, suggest 2–3 specific new features or interactions the product does not yet have but would directly serve the user's JTBD. These are not fixes — they are additive ideas.
+
+Rules for a valid feature idea:
+- It must be grounded in an observed user need or gap in the current flow (not a generic "add dark mode")
+- It must be described concretely enough that a PM could write a ticket from it
+- It must fit the product's current stage and technical surface (no "build a mobile app" if the product is a web SaaS)
+- Rate effort: Low (days) / Medium (weeks) / High (months)
+
+Example: "AgentPlace has no 'try before you buy' affordance. A free single-run trial for paid agents — where the user inputs one sample and sees the output before purchase — would address the primary trust barrier on the detail page. Effort: Medium."
+
+### Advisory Output Format
+
+Add a dedicated section to the report after the findings:
+
+```
+## UX Recommendations
+
+### UX-OPP-001 — [Title: the improvement, not the problem]
+
+**Current experience:**
+[Describe what happens today — be specific about the flow, screen, or moment]
+
+**Suggested experience:**
+[Describe the improved version — be specific enough that a designer can wireframe it from this description]
+
+**Why it's better:**
+- User benefit: [what the user gains]
+- Business benefit: [conversion / retention / trust impact]
+
+**Effort:** Low / Medium / High
+[Low = copy change or 1-component edit; Medium = new component or flow change; High = architectural or multi-page change]
+
+**Inspired by / reference:**
+[Name a product or pattern that does this well, or describe the UX principle it applies]
+```
+
+Produce 3–6 UX-OPP recommendations per audit. Fewer is better — only include suggestions that are genuinely specific and actionable for this product. Generic suggestions are worse than none.
+
+Also produce a **New Feature Ideas** subsection within UX Recommendations:
+
+```
+## New Feature Ideas
+
+### IDEA-001 — [Feature name]
+
+**What it is:**
+[One paragraph — what the feature does, how the user interacts with it]
+
+**Why now:**
+[What user gap or observed friction makes this the right next thing]
+
+**How it fits:**
+[Where it lives in the current UI and how it connects to existing flows]
+
+**Effort:** Low (days) / Medium (weeks) / High (months)
+```
+
+Produce 2–4 feature ideas per audit. These are creative, forward-looking, and grounded in what you observed — not a wishlist. If you cannot connect a feature idea to a specific observed user need, do not include it.
+
+---
+
 ## Step 4 — Score Every Issue
 
 Use this 5-factor rubric. Score each factor 0–4. Max total = 20.
@@ -933,6 +1055,7 @@ Use the appropriate template:
 **Always:**
 - Lead with what is working (positives first — goodwill is an asset)
 - Group issues by taxonomy code (IA / CONTENT / FORM / AUTH / VISUAL / MOBILE / PERF / SEO / TRUST / PWA / FLOW / EXCISE / GOODWILL / DELIGHT / NOTIFY / VOICE / AI-SLOP)
+- After all findings, always include a **UX Recommendations** section (UX-OPP-001…NNN) and a **New Feature Ideas** section (IDEA-001…NNN) — these are mandatory in every full audit report
 - Every issue includes: what it is, why it matters, which standard it violates, how to fix it, AND a concrete implementation
 - Every finding cites at least one: Nielsen heuristics, Core Web Vitals, OWASP ASVS, Material Design 3, Apple HIG
 - Include a Quick Wins section (issues fixable in under 1 hour)
@@ -1025,6 +1148,8 @@ If the user confirms, use `skill_manager` to patch the relevant file (`checklist
 | FORM | Very High | Labels, validation, field types, error recovery |
 | AUTH | Very High | Login, registration, session, password, social sign-in |
 | A11Y | — | **Not audited** — scope excludes screen reader, keyboard, and ARIA findings |
+| UX-OPP | Medium–High | UX opportunities — flow simplification, conversion moments, discoverability, hierarchy, pattern upgrades. Not bugs — proactive improvements. |
+| IDEA | Medium–High | New feature ideas grounded in observed user needs. Additive, not fixes. |
 | VISUAL | High | Hierarchy, typography, colour, 8-state components, animation |
 | MOBILE | High | Touch targets, thumb reach, orientation, keyboard types |
 | PERF | Very High | LCP ≤ 2.5s, INP ≤ 200ms, CLS ≤ 0.1, TTFB ≤ 800ms |

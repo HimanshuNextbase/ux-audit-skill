@@ -174,6 +174,48 @@ Score each audited journey on 4 axes. A single fail on any axis fails the journe
 
 ---
 
+## UX Recommendations
+
+Proactive improvements — these are not bugs. They are specific, actionable suggestions to make the experience meaningfully better for users.
+
+### UX-OPP-001 — [Title: the improvement, not the problem]
+
+**Current experience:**
+[What happens today — specific flow, screen, or moment]
+
+**Suggested experience:**
+[The improved version — specific enough to wireframe from this description]
+
+**Why it's better:**
+- User benefit: [what the user gains]
+- Business benefit: [conversion / retention / trust impact]
+
+**Effort:** Low / Medium / High
+
+**Reference:**
+[Product or pattern that does this well, or the UX principle applied]
+
+---
+
+## New Feature Ideas
+
+Specific additive ideas grounded in observed user needs — not a wishlist.
+
+### IDEA-001 — [Feature name]
+
+**What it is:**
+[What the feature does and how the user interacts with it]
+
+**Why now:**
+[The specific user gap or friction observed that makes this the right next thing]
+
+**How it fits:**
+[Where in the current UI it lives and how it connects to existing flows]
+
+**Effort:** Low (days) / Medium (weeks) / High (months)
+
+---
+
 ## Quick Wins (Fixable in < 1 Hour)
 
 | # | Fix | Category | Impact |

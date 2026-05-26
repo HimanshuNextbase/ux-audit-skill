@@ -22,6 +22,7 @@ Performs systematic, evidence-backed UX audits on SaaS web apps and mobile apps.
 Trigger this skill when the user asks to:
 - Audit a website, SaaS app, mobile app, or PWA for UX/usability issues
 - Identify usability and conversion problems before they cost users or revenue
+- Get proactive UX recommendations — better flows, conversion improvements, feature ideas grounded in observed user behaviour
 - Review a product before launch, after shipping new features, or when conversion drops
 - Run a quick scan for obvious issues (top 10 problems in <10 min)
 - Generate a UX report, executive scorecard, or issue backlog for engineering
@@ -145,6 +146,8 @@ Load these on demand — only when needed for the specific audit:
 | FORM | Labels, validation, field types, error recovery |
 | AUTH | Login, registration, session, password |
 | A11Y | **Not audited** — screen reader, keyboard, and ARIA findings are out of scope |
+| UX-OPP | Proactive UX improvements — flow simplification, conversion moments, discoverability, hierarchy, pattern upgrades |
+| IDEA | New feature ideas grounded in observed user needs — additive, not fixes |
 | VISUAL | Hierarchy, typography, colour, 8-state components, animation |
 | MOBILE | Touch targets, thumb reach, orientation, keyboard types |
 | PERF | LCP ≤ 2.5s, INP ≤ 200ms, CLS ≤ 0.1, TTFB ≤ 800ms |
