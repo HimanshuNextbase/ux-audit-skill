@@ -62,6 +62,14 @@ Minimum journeys to map (adjust for product type):
 - **Are there known problem areas?** — User complaints, support tickets, analytics drop-off points, stakeholder concerns
 - **What are the business stakes?** — Conversion, compliance deadline, accessibility lawsuit risk, launch readiness
 
+**Credentials check — ask at Step 0, not mid-audit:**
+If the product has any of these flows, ask for test credentials or a session token NOW before starting:
+- Creator/seller/submit/list flow (submit form, agent listing, product upload)
+- Purchase/checkout/billing flow
+- Any authenticated dashboard or settings page in scope
+
+Do not discover auth gates mid-audit. If credentials are not provided, mark gated flows as "Code-only — no live test possible" in the report and note the exact flows that need credentials to verify. Never proceed past a login wall without credentials.
+
 **Single-page / single-flow mode:** If the user specifies a single page or flow ("audit the login page", "check the settings screen", "look at the onboarding flow"), skip the full journey mapping in Step 0.2. Map only the requested page/flow. Apply only the checklist sections relevant to it. Still complete 0.1 and 0.4.
 
 #### Input type handling
@@ -310,6 +318,14 @@ For every P0 and P1 finding:
 6. Save to `~/audits/screenshots/[slug]-[FINDING_ID].png`
 7. Reference the saved path in the finding's Screenshot field
 
+**Analogous state screenshots — for failure paths that cannot be forced:**
+If a finding describes a failure state you cannot trigger live (e.g., API error → empty state, fallback copy on metadata failure), capture the closest observable equivalent:
+- The zero-results empty state from a nonsense search (shows exact UI the user would see during failure)
+- The gated screen that blocks the flow (shows the interruption point)
+- The component that contains the broken code (highlighted with the annotation JS)
+Label the screenshot clearly: `Screenshot: ~/audits/screenshots/[slug]-[ID].png — analogous state: [what it shows and why the exact failure state was not forced]`
+Never write N/A for a code-only finding if any related visible UI state exists and is reachable.
+
 **Mobile viewport — mandatory for any finding that affects mobile layout or mobile-only UI:**
 
 After the desktop screenshot, resize to 390px and take a mobile screenshot:
@@ -339,7 +355,13 @@ Output format — return a structured finding list only (no full report):
       3. [observe the broken state]
   - Expected: [what should happen]
   - Actual: [what actually happens]
-  - Screenshot: ~/audits/screenshots/[slug]-[CODE-NNN].png (or "N/A — P2+ / no URL / login required")
+  - Screenshot: ~/audits/screenshots/[slug]-[CODE-NNN].png
+      Allowed values:
+      • Actual path — annotated UI element in browser
+      • [path] — analogous state: [description of what is shown and why exact state was not forced]
+      • N/A — login required and no credentials provided
+      • N/A — P2/P3 finding (skip annotation for lower priority)
+      "N/A — code-only finding" is NOT acceptable for P0/P1 if any related visible UI exists and is reachable
   - Fix: [one sentence — what to change and why, written for a PM or designer]
   - Implementation: [developer-ready detail — code snippet or structural description]
     — FORM findings: always include a DOM diff showing actual vs. expected markup:
@@ -403,7 +425,7 @@ Work through every Lane B check in system.md Step 2:
   performance code patterns (lazy-load on LCP, tabular-nums, 100vw, etc.),
   anti-slop code checks (transition-all, z-index:9999, bounce easing, etc.).
 
-**Lighthouse audit — run if a local dev server is available:**
+**Lighthouse audit — MANDATORY when a local dev server is running. Run this before writing any findings:**
 
 ```bash
 npx --yes lighthouse http://localhost:3000 --output json --quiet \
@@ -416,12 +438,14 @@ au=d.get('audits',{})
 lcp=au.get('largest-contentful-paint',{}).get('numericValue')
 tbt=au.get('total-blocking-time',{}).get('numericValue')
 cls=au.get('cumulative-layout-shift',{}).get('numericValue')
-fails=[k for k,v in au.items() if isinstance(v.get('score'),float) and v['score']==0 and v.get('scoreDisplayMode')=='binary'][:12]
-print(json.dumps({'perf':cats.get('performance',{}).get('score'),'lcp_ms':round(lcp) if lcp else None,'tbt_ms':round(tbt) if tbt else None,'cls':round(cls,3) if cls else None}))
+inp=au.get('interaction-to-next-paint',{}).get('numericValue')
+print(json.dumps({'perf':cats.get('performance',{}).get('score'),'lcp_ms':round(lcp) if lcp else None,'tbt_ms':round(tbt) if tbt else None,'cls':round(cls,3) if cls else None,'inp_ms':round(inp) if inp else None}))
 "
 ```
 
-Record the perf score plus LCP/TBT/CLS in the CWV table. If Lighthouse is unavailable, note "Lighthouse: not available — CWV measured via Performance API only."
+Record perf score + LCP/TBT/CLS/INP in the CWV table.
+
+**If Lighthouse fails or is unavailable:** note the exact error in the CWV table ("Lighthouse failed: [error]") — do NOT silently skip it or write "Not measured." "Not measured" is only acceptable for metrics that cannot be measured by any available tool in this session. INP must be measured; if PerformanceObserver can't get it, run Lighthouse. If both fail, note why.
 
 Output format — structured finding list only:
 
