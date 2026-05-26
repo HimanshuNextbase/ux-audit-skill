@@ -226,7 +226,7 @@ Search README.md, package.json (`homepage`), vercel.json, netlify.toml, wrangler
 Skip browser checks. Note "Rendered view unavailable — backend-only code" at top of findings. Do not skip the rest of the audit.
 
 Work through every Lane A category in system.md Step 2:
-  IA, CONTENT, FORM, AUTH, A11Y, VISUAL, MOBILE, PERF,
+  IA, CONTENT, FORM, AUTH, VISUAL, MOBILE, PERF,
   SEO, TRUST, PWA (if applicable),
   FLOW (4-axis journey scores + TTFV + "what if" + "3 Days Later"),
   EXCISE (Cooper's friction catalog),
@@ -598,24 +598,6 @@ Work through each category below. Flag every issue with its taxonomy code.
 - Password confirmation field shows match status in real time
 - Login page has a login/sign-in heading
 
-#### A11Y — Accessibility
-- Color contrast: 4.5:1 minimum for text, 3:1 for UI elements
-- Focus ring visible on every interactive element (never `outline: none` without replacement)
-- Focus rings appear instantly — never animate on focus gain
-- Tab order follows logical reading order
-- Modals trap focus; Escape closes them; focus returns to trigger on close
-- aria-live="polite" for status updates; "assertive" for errors
-- ARIA states match actual UI state (aria-expanded, aria-selected, aria-checked)
-- Icon-only buttons have aria-label
-- One h1 per page; heading hierarchy is sequential (no h2 → h4 skips)
-- Buttons for actions, `<a href>` for navigation — never swapped
-- Alt text: under 125 chars, descriptive, doesn't start with "image of"; empty alt for decorative
-- Disabled elements use aria-disabled="true" (not just visual dimming)
-- Form errors are announced to screen readers via aria-live or aria-describedby
-- Custom dropdowns have full keyboard support
-- WCAG reflow: content usable at 320px width equivalent (400% zoom) without horizontal scroll
-- Visited vs unvisited links are visually distinguishable
-
 #### VISUAL — Design & Interaction
 - Visual hierarchy communicates primary / secondary / tertiary within 2 seconds
 - Primary actions are visually distinct from secondary actions
@@ -798,26 +780,14 @@ Failure: error messages sound like engineering; marketing sounds like copywritin
 
 When frontend or full-stack code is provided, additionally check:
 
-**HTML Semantics**
-- Landmark regions present: `<header>`, `<nav>`, `<main>`, `<footer>`
-- Every interactive custom widget has correct `role` + `aria-*` attributes
+**HTML Semantics (structure and correctness)**
 - Form `<label>` elements are associated via `for` or wrapping (no placeholder-as-label)
 - `<button>` used for actions; `<a href>` used for navigation — not swapped
-- Heading structure follows sequential nesting
-
-**ARIA Correctness**
-- `aria-expanded` toggles correctly on open/close
-- `aria-live` regions used for dynamic content updates
-- `aria-disabled="true"` used (not just visual styling) for non-interactive elements
-- `aria-labelledby` / `aria-describedby` used for complex relationships
+- Heading structure follows sequential nesting (no h2 → h4 skips)
 
 **Component State Coverage**
-Every interactive component must handle all 8 states:
-- Default, Hover (`@media (hover: hover)`), Focus (`:focus-visible`), Active/Pressed, Disabled (`opacity: 0.5` + `cursor: not-allowed` + `aria-disabled`), Loading (`aria-busy`), Error (`aria-invalid`), Success (`aria-live="polite"`)
-
-**Static A11y Linting**
-- `eslint-plugin-jsx-a11y` (React) — 0 violations
-- Storybook addon-a11y — all component stories pass
+Every interactive component must handle all 8 visible states:
+- Default, Hover (`@media (hover: hover)`), Focus (`:focus-visible`), Active/Pressed, Disabled (`opacity: 0.5` + `cursor: not-allowed`), Loading, Error, Success
 
 **Performance Code Checks**
 - No `loading="lazy"` on LCP/hero images
@@ -938,7 +908,7 @@ Use the appropriate template:
 
 **Always:**
 - Lead with what is working (positives first — goodwill is an asset)
-- Group issues by taxonomy code (IA / CONTENT / FORM / AUTH / A11Y / VISUAL / MOBILE / PERF / SEO / TRUST / PWA / FLOW / EXCISE / GOODWILL / DELIGHT / NOTIFY / VOICE / AI-SLOP)
+- Group issues by taxonomy code (IA / CONTENT / FORM / AUTH / VISUAL / MOBILE / PERF / SEO / TRUST / PWA / FLOW / EXCISE / GOODWILL / DELIGHT / NOTIFY / VOICE / AI-SLOP)
 - Every issue includes: what it is, why it matters, which standard it violates, how to fix it, AND a concrete implementation
 - Every finding cites at least one: WCAG 2.2, Nielsen heuristics, Core Web Vitals, OWASP ASVS, Material Design 3, Apple HIG, W3C WAI tutorials
 - Include a Quick Wins section (issues fixable in under 1 hour)
@@ -1030,7 +1000,7 @@ If the user confirms, use `skill_manager` to patch the relevant file (`checklist
 | CONTENT | High | Language clarity, CTA text, empty states, copy tone |
 | FORM | Very High | Labels, validation, field types, error recovery |
 | AUTH | Very High | Login, registration, session, password, social sign-in |
-| A11Y | Very High | Contrast, keyboard, screen reader, ARIA, reflow, focus |
+| A11Y | — | **Not audited** — scope excludes screen reader, keyboard, and ARIA findings |
 | VISUAL | High | Hierarchy, typography, colour, 8-state components, animation |
 | MOBILE | High | Touch targets, thumb reach, orientation, keyboard types |
 | PERF | Very High | LCP ≤ 2.5s, INP ≤ 200ms, CLS ≤ 0.1, TTFB ≤ 800ms |

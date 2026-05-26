@@ -177,43 +177,6 @@ Every interactive element must have all 8 states:
 
 ---
 
-## 9. Accessibility
-
-### Contrast & Colour
-- [ ] Text contrast: minimum 4.5:1 (body), 3:1 (large text / UI elements)
-- [ ] Placeholder text contrast: minimum 3:1
-- [ ] Colour is never the sole indicator of meaning — always add text or icon
-- [ ] Sufficient contrast maintained in disabled states (still distinguishable)
-
-### Keyboard
-- [ ] All interactive elements reachable by Tab
-- [ ] Focus ring visible on every interactive element (never `outline: none` without replacement)
-- [ ] Focus rings appear instantly — never animate on focus gain
-- [ ] Tab order follows logical reading order
-- [ ] Modals: focus moves in on open, trapped inside, Escape closes, focus returns to trigger
-- [ ] No positive `tabindex` values (use 0 or -1 only)
-- [ ] All custom widgets keyboard-operable (dropdowns, sliders, date pickers)
-
-### Semantics & Structure
-- [ ] One `<h1>` per page — heading hierarchy sequential (no skipping levels)
-- [ ] Landmark regions present: `<header>`, `<nav>`, `<main>`, `<footer>`
-- [ ] `<button>` used for actions; `<a href>` used for navigation — never swapped
-- [ ] Icon-only buttons have `aria-label`
-- [ ] Decorative images have `alt=""` — informative images have descriptive alt (under 125 chars, no "image of")
-- [ ] Form errors announced to screen readers via `aria-live` or `aria-describedby`
-- [ ] `aria-expanded`, `aria-selected`, `aria-checked` match actual UI state
-- [ ] `aria-live="polite"` for status; `aria-live="assertive"` for errors only
-- [ ] Visited vs unvisited links visually distinguishable
-
-### Zoom & Reflow
-- [ ] Page usable at 200% zoom — no horizontal scroll, no text overflow
-- [ ] Reflow at 320px CSS width (equivalent to 400% zoom) — no horizontal scroll, no functional loss
-
-### Screen Reader
-- [ ] Landmark structure announced correctly (banner / nav / main / contentinfo)
-- [ ] Custom dropdowns, modals, and carousels have correct ARIA roles and states
-- [ ] Loading states communicated (spinner has `aria-label`; `aria-busy` set during load)
-
 ---
 
 ## 10. Performance (Visual Indicators)
