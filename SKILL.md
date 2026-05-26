@@ -1,12 +1,12 @@
 ---
 name: ux-audit
-description: "Systematic UX audit for SaaS web apps and mobile apps — WCAG 2.2, Nielsen heuristics, anti-slop detection, 5-factor severity scoring. Accepts a live URL, frontend code, backend code, screenshots, design specs, or any combination. Outputs prioritised findings with P0–P3 bands, fix recommendations, and standards citations."
+description: "Systematic UX audit for SaaS web apps and mobile apps — Nielsen heuristics, Core Web Vitals, anti-slop detection, 5-factor severity scoring. Accepts a live URL, frontend code, backend code, screenshots, design specs, or any combination. Outputs prioritised findings with P0–P3 bands, fix recommendations, and standards citations."
 version: 1.1.0
 author: HimanshuNextbase
 license: MIT
 metadata:
   hermes:
-    tags: [UX, Accessibility, WCAG, Audit, A11y, Mobile, Performance, SaaS, Design, Usability]
+    tags: [UX, Audit, Mobile, Performance, SaaS, Design, Usability, Anti-slop, Conversion]
     category: creative
     related_skills: [claude-design, popular-web-designs, architecture-diagram]
 ---
@@ -21,7 +21,7 @@ Performs systematic, evidence-backed UX audits on SaaS web apps and mobile apps.
 
 Trigger this skill when the user asks to:
 - Audit a website, SaaS app, mobile app, or PWA for UX/usability issues
-- Check accessibility compliance (WCAG 2.2, ARIA, keyboard, screen reader)
+- Identify usability and conversion problems before they cost users or revenue
 - Review a product before launch, after shipping new features, or when conversion drops
 - Run a quick scan for obvious issues (top 10 problems in <10 min)
 - Generate a UX report, executive scorecard, or issue backlog for engineering
@@ -32,10 +32,10 @@ Trigger this skill when the user asks to:
 
 | Input | What's auditable | Limitations | Request additionally |
 |-------|-----------------|-------------|---------------------|
-| **Live URL** | IA, content, visual, a11y (visual), forms, mobile, performance, SEO, trust | Cannot inspect code-level ARIA or lint issues | Auth credentials if behind login |
+| **Live URL** | IA, content, visual, forms, mobile, performance, SEO, trust | Cannot inspect code-level component state or lint issues | Auth credentials if behind login |
 | **URL + auth credentials** | All of the above plus auth flows, gated pages | Same code-level limits | Confirm login flow to try |
-| **Screenshots / images** | Layout, hierarchy, copy, CTAs, form labels, visual states shown, typography, colour, anti-slop | Cannot assess: keyboard nav, ARIA states, focus rings, actual contrast ratios, performance, hover/focus/active states not captured in screenshot | State labels per image (which page, which state, viewport); request error + empty + mobile screenshots if not provided |
-| **Frontend code (HTML/CSS/JS/React/Vue/etc.)** | Semantic HTML, ARIA correctness, focus management, 8-state coverage, performance code patterns, anti-slop code tells | Cannot assess visual rendering or copy without seeing the page | None required |
+| **Screenshots / images** | Layout, hierarchy, copy, CTAs, form labels, visual states shown, typography, colour, anti-slop | Cannot assess: interactive states not captured, performance, hover/focus/active states not shown in screenshot | State labels per image (which page, which state, viewport); request error + empty + mobile screenshots if not provided |
+| **Frontend code (HTML/CSS/JS/React/Vue/etc.)** | Semantic HTML structure, 8-state component coverage, performance code patterns, anti-slop code tells | Cannot assess visual rendering or copy without seeing the page | None required |
 | **Backend code** | Error response UX, auth expiry behavior, rate-limit messaging, server/client validation alignment, long-running request handling | Cannot assess rendered UI | None required |
 | **Spec / requirements doc** | Missing screens, cognitive load per screen, entry/exit points, single purpose per screen | No rendered UI to check | None required |
 | **Combination** | Union of all applicable lanes | Each input type's limits still apply | Confirm which inputs are authoritative when they conflict |
@@ -86,13 +86,13 @@ Look at what the user provided and decide the work structure from that. See `pro
 ### Step 2 — Lane Reference (for subagents)
 
 The three-lane model from `prompts/system.md` Step 2 is executed **by subagents**, not the main agent:
-- **Lane A** (URL / screenshot) — rendered experience: IA, content, visual, a11y, forms, performance, FLOW, EXCISE, GOODWILL, DELIGHT, NOTIFY, VOICE, anti-slop
-- **Lane B** (frontend code) — static analysis: semantic HTML, ARIA, focus management, 8-state components, CWV code patterns
+- **Lane A** (URL / screenshot) — rendered experience: IA, content, visual, forms, performance, FLOW, EXCISE, GOODWILL, DELIGHT, NOTIFY, VOICE, anti-slop
+- **Lane B** (frontend code) — static analysis: semantic HTML structure, 8-state components, CWV code patterns
 - **Lane C** (backend code) — UX-relevant server patterns: error format, auth expiry, rate limiting, validation alignment, long-running ops
 
 Score every finding with the 5-factor rubric (0–4 each, max 20) → P0–P3 band.
 
-**P0 override:** Force P0 if an issue blocks sign-in, payment/billing, legal consent, or keyboard-only navigation on a critical journey — regardless of score.
+**P0 override:** Force P0 if an issue blocks sign-in, payment/billing, legal consent, or task completion on a critical journey — regardless of score.
 
 ### Step 3 — Deliver the Report
 
@@ -116,7 +116,7 @@ Load these on demand — only when needed for the specific audit:
 | `templates/full-report.md` | Full audit report template |
 | `templates/executive-scorecard.md` | Leadership snapshot template |
 | `templates/issue-entry.json` | Structured issue ticket format |
-| `examples/saas-dashboard.md` | Sample SaaS dashboard audit (A11Y, PERF, IA findings) |
+| `examples/saas-dashboard.md` | Sample SaaS dashboard audit (VISUAL, PERF, IA findings) |
 | `examples/mobile-pwa.md` | Sample mobile PWA audit (touch targets, offline, reflow) |
 | `knowledge/index.md` | Index of 12 knowledge files — load individual files as needed |
 
@@ -144,7 +144,7 @@ Load these on demand — only when needed for the specific audit:
 | CONTENT | Language clarity, CTA text, empty states, copy tone |
 | FORM | Labels, validation, field types, error recovery |
 | AUTH | Login, registration, session, password |
-| A11Y | Contrast, keyboard, screen reader, ARIA, reflow, focus |
+| A11Y | **Not audited** — screen reader, keyboard, and ARIA findings are out of scope |
 | VISUAL | Hierarchy, typography, colour, 8-state components, animation |
 | MOBILE | Touch targets, thumb reach, orientation, keyboard types |
 | PERF | LCP ≤ 2.5s, INP ≤ 200ms, CLS ≤ 0.1, TTFB ≤ 800ms |
@@ -163,7 +163,7 @@ Load these on demand — only when needed for the specific audit:
 
 ## Standards Cited
 
-WCAG 2.2 (A/AA/AAA) · Nielsen 10 Heuristics · Google Core Web Vitals · OWASP ASVS · Material Design 3 · Apple HIG · W3C WAI-ARIA APG · WCAG-EM · Steve Krug (Don't Make Me Think) · Alan Cooper (About Face) · Don Norman (Emotional Design) · Christensen JTBD Framework
+Nielsen 10 Heuristics · Google Core Web Vitals · OWASP ASVS · Material Design 3 · Apple HIG · Steve Krug (Don't Make Me Think) · Alan Cooper (About Face) · Don Norman (Emotional Design) · Christensen JTBD Framework
 
 ---
 

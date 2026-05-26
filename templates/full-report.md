@@ -1,7 +1,7 @@
 # UX Audit Report: [Product / Site Name]
 
 **URL / Repo:** [target]
-**Audit type:** Full / Accessibility-only / Performance / Quick scan
+**Audit type:** Full / Performance / Quick scan
 **Input mode:** URL / URL + credentials / Frontend repo / Full-stack + preview / Screenshots
 **Auditor:** [name or "AI agent"]
 **Date:** [date]
@@ -56,7 +56,7 @@ Score each audited journey on 4 axes. A single fail on any axis fails the journe
 **IA-001: [Title]**
 - **What:** [Specific description of the issue on the specific page/element]
 - **Why it matters:** [User impact + business impact]
-- **Standard violated:** [WCAG criterion / Nielsen heuristic / Cooper / Krug / Norman / etc.]
+- **Standard violated:** [Nielsen heuristic / Core Web Vitals / OWASP ASVS / Cooper / Krug / Norman / etc.]
 - **Fix:** [One sentence — what to change and why. Written for product/design.]
 - **Implementation:** [Developer-ready detail. One of:]
   - Code issue → before/after code block
@@ -79,10 +79,6 @@ Score each audited journey on 4 axes. A single fail on any axis fails the journe
 ---
 
 ### AUTH — Login & Registration
-
----
-
-### A11Y — Accessibility
 
 ---
 
@@ -212,7 +208,7 @@ Score each audited journey on 4 axes. A single fail on any axis fails the journe
 
 ## Retest Criteria
 
-[List which issues will be verified by automated tool rerun vs manual check vs usability retest. Specify the exact Playwright scenario, Lighthouse assertion, or pa11y config to use.]
+[List which issues will be verified by automated tool rerun vs manual check vs usability retest. Specify the exact Playwright scenario or Lighthouse assertion to use.]
 
 ---
 
@@ -220,20 +216,16 @@ Score each audited journey on 4 axes. A single fail on any axis fails the journe
 
 | Tool | Purpose | Result |
 |------|---------|--------|
-| Lighthouse | Performance, a11y, SEO, PWA | Score: [score] |
-| axe / axe DevTools | Accessibility violations | [count] violations |
-| WAVE | Accessibility overlay | [findings] |
-| Pa11y | CI accessibility sweep | [findings] |
+| Lighthouse | Performance, SEO, PWA | Score: [score] |
 | ZAP baseline | Security headers | [findings] |
 | HTTP Observatory | Header hygiene | Grade: [grade] |
-| Manual keyboard | Keyboard-only walkthrough | [pass/fail notes] |
-| Screen reader | NVDA / VoiceOver | [pass/fail notes] |
+| Browser DevTools | Network, performance, component state | [findings] |
 
 ---
 
 ## Audit Limitations
 
-This audit can determine: whether the product clears the usability floor, completes its primary tasks, passes accessibility checks, and shows evidence of design craft. It cannot determine:
+This audit can determine: whether the product clears the usability floor, completes its primary tasks, and shows evidence of design craft. It cannot determine:
 
 | Cannot assess | Why | Use instead |
 |--------------|-----|-------------|

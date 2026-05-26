@@ -111,10 +111,10 @@ Every interactive element must have all 8 states:
 - [ ] **Hover** — only applied via `@media (hover: hover)`
 - [ ] **Focus** — via `:focus-visible`, never removed without replacement
 - [ ] **Active / Pressed** — visual feedback on click/press
-- [ ] **Disabled** — visually distinct + `aria-disabled="true"` + `cursor: not-allowed`
-- [ ] **Loading** — spinner or skeleton; `aria-busy="true"`
-- [ ] **Error** — red/error colour + icon + `aria-invalid="true"`
-- [ ] **Success** — confirmation visual + `aria-live="polite"` announcement
+- [ ] **Disabled** — visually distinct + `cursor: not-allowed`
+- [ ] **Loading** — spinner or skeleton visible
+- [ ] **Error** — red/error colour + icon + inline error message
+- [ ] **Success** — visible confirmation state
 
 ---
 
@@ -173,7 +173,7 @@ Every interactive element must have all 8 states:
 - [ ] Product logo present on login page
 - [ ] "I agree" to T&C located next to the registration button
 - [ ] Password confirmation field shows match status in real time
-- [ ] Tab order through login form makes sense
+- [ ] Login form fields are in a logical visual order
 
 ---
 
@@ -274,7 +274,7 @@ Score each flagged issue across 5 factors (0–4 each, max 20):
 
 **Bands:** P0 = 17–20 (or override) · P1 = 13–16 · P2 = 8–12 · P3 = 1–7
 
-**P0 override:** Force P0 if the issue blocks sign-in, payment/billing, legal consent, or keyboard-only completion on a critical journey — regardless of numeric score.
+**P0 override:** Force P0 if the issue blocks sign-in, payment/billing, legal consent, or task completion on a critical journey — regardless of numeric score.
 
 ---
 

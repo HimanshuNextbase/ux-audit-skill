@@ -67,21 +67,21 @@ Minimum journeys to map (adjust for product type):
 #### Input type handling
 
 **Live URL (with or without auth)**
-- Run Lane A in full: IA, content, visual, a11y, forms, performance, mobile, SEO, trust.
+- Run Lane A in full: IA, content, visual, forms, performance, mobile, SEO, trust.
 - If behind a login wall, ask for credentials or a session recording before starting.
-- You cannot inspect ARIA attributes, lint errors, or component state from the rendered page alone — note these explicitly as "not verifiable from URL — requires code review."
+- You cannot inspect component state or code-level issues from the rendered page alone — note these explicitly as "not verifiable from URL — requires code review."
 
 **Screenshots / images**
 - Confirm which page and state each image represents before auditing (ask if not labelled).
 - Request minimum viable screenshot set if not provided: happy path, error state, empty state, mobile viewport of the primary flow.
 - What you CAN assess from screenshots: layout, visual hierarchy, copy, CTA text, form labels, colour/typography, spacing, navigation structure, anti-slop tells, visual states captured.
-- What you CANNOT assess: keyboard navigation, focus ring visibility, ARIA states, actual contrast ratio (visual estimate only — flag as "verify with contrast checker"), hover/focus/active states not shown, performance, screen reader behavior.
+- What you CANNOT assess: interactive states not captured in the screenshot (hover, focus, active), performance, component state changes.
 - Explicitly note every "cannot verify from screenshot" item at the end of each screenshot finding.
 
 **Frontend code (HTML / CSS / JS / React / Vue / Svelte / etc.)**
-- Run Lane B in full: semantic HTML, ARIA correctness, focus management, 8-state component coverage, performance code patterns, anti-slop code checks.
+- Run Lane B in full: semantic HTML structure, 8-state component coverage, performance code patterns, anti-slop code checks.
 - You cannot assess visual rendering or copy quality without a screenshot or URL.
-- When both code and URL/screenshot are provided, Lane A + Lane B findings are combined. Conflicts: code is authoritative for ARIA and semantics; visual observation is authoritative for hierarchy and copy.
+- When both code and URL/screenshot are provided, Lane A + Lane B findings are combined. Conflicts: code is authoritative for semantics and component logic; visual observation is authoritative for hierarchy and copy.
 
 **Backend code**
 - Check UX-relevant backend patterns only (not architecture or security beyond UX impact):
@@ -98,7 +98,7 @@ Minimum journeys to map (adjust for product type):
 
 **Combination inputs**
 - Run every applicable lane for each input type provided.
-- When inputs conflict (e.g., screenshot shows one thing, code shows another), prefer code for ARIA/semantics, prefer visual for hierarchy and copy, and explicitly flag the discrepancy as an issue.
+- When inputs conflict (e.g., screenshot shows one thing, code shows another), prefer code for component logic and semantics, prefer visual for hierarchy and copy, and explicitly flag the discrepancy as an issue.
 - Label every finding with its source: [URL], [Screenshot], [Frontend], [Backend], [Spec].
 
 ### 0.4 — Confirm Before Proceeding
@@ -342,7 +342,7 @@ Output format — return a structured finding list only (no full report):
   - Screenshot: ~/audits/screenshots/[slug]-[CODE-NNN].png (or "N/A — P2+ / no URL / login required")
   - Fix: [one sentence — what to change and why, written for a PM or designer]
   - Implementation: [developer-ready detail — code snippet or structural description]
-    — A11Y findings: always include a DOM diff showing actual vs. expected markup:
+    — FORM findings: always include a DOM diff showing actual vs. expected markup:
         DOM (actual):   <input placeholder="Search programs">
         DOM (expected): <label for="prog-search">Search creator programs</label>
                         <input id="prog-search" name="search" placeholder="Search programs">
@@ -351,12 +351,12 @@ Output format — return a structured finding list only (no full report):
         Expected: 503 { "message": "Service unavailable, retry in 30s", "retryAfter": 30 }
         Actual:   null → notFound() → UI renders generic 404 page
   - Files affected: [src/components/Foo/index.tsx:73-82, src/app/go/[id]/page.tsx — specific, not "related files"]
-  - Standard: [WCAG 2.2 SC X.X.X / Nielsen heuristic N / Core Web Vitals / etc.]
+  - Standard: [Nielsen heuristic N / Core Web Vitals / OWASP ASVS / Material Design 3 / etc.]
 
 Implementation field — MANDATORY on every single finding, no exceptions:
-  • Code issue (A11Y, VISUAL, MOBILE, PERF, FORM, AUTH): before/after code snippet
+  • Code issue (VISUAL, MOBILE, PERF, FORM, AUTH): before/after code snippet
     Before: <button onclick="...">X</button>
-    After:  <button aria-label="Close dialog" onclick="...">X</button>
+    After:  <button onclick="..." title="Close dialog">X ✕</button>
   • Copy issue (CONTENT, VOICE, GOODWILL): before/after copy rewrite
     Before: "Submit"
     After:  "Create your account"
@@ -399,7 +399,7 @@ Load this skill file:
   skill_view("ux-audit", "prompts/system.md")   # read Lane B section
 
 Work through every Lane B check in system.md Step 2:
-  Semantic HTML, ARIA correctness, focus management, 8-state component coverage,
+  Semantic HTML structure, 8-state component coverage,
   performance code patterns (lazy-load on LCP, tabular-nums, 100vw, etc.),
   anti-slop code checks (transition-all, z-index:9999, bounce easing, etc.).
 
@@ -417,11 +417,11 @@ lcp=au.get('largest-contentful-paint',{}).get('numericValue')
 tbt=au.get('total-blocking-time',{}).get('numericValue')
 cls=au.get('cumulative-layout-shift',{}).get('numericValue')
 fails=[k for k,v in au.items() if isinstance(v.get('score'),float) and v['score']==0 and v.get('scoreDisplayMode')=='binary'][:12]
-print(json.dumps({'perf':cats.get('performance',{}).get('score'),'a11y':cats.get('accessibility',{}).get('score'),'lcp_ms':round(lcp) if lcp else None,'tbt_ms':round(tbt) if tbt else None,'cls':round(cls,3) if cls else None,'a11y_failures':fails}))
+print(json.dumps({'perf':cats.get('performance',{}).get('score'),'lcp_ms':round(lcp) if lcp else None,'tbt_ms':round(tbt) if tbt else None,'cls':round(cls,3) if cls else None}))
 "
 ```
 
-Record perf and a11y scores plus LCP/TBT/CLS in the CWV table. Each `a11y_failures` entry is a candidate finding — verify in code before including. If Lighthouse is unavailable, note "Lighthouse: not available — CWV measured via Performance API only."
+Record the perf score plus LCP/TBT/CLS in the CWV table. If Lighthouse is unavailable, note "Lighthouse: not available — CWV measured via Performance API only."
 
 Output format — structured finding list only:
 
@@ -442,7 +442,7 @@ Output format — structured finding list only:
       DOM (actual) / Before:   [current code or markup]
       DOM (expected) / After:  [corrected code or markup]
   - Files affected: [exact file:line references]
-  - Standard: [WCAG SC / axe rule / etc.]
+  - Standard: [Nielsen heuristic / Core Web Vitals / Material Design 3 / etc.]
 """,
     context=context,
     toolsets=["file", "skills", "search", "todo"],
@@ -487,7 +487,7 @@ Output format — structured finding list only:
       Before: [current code or response shape]
       After:  [corrected code or response shape]
   - Files affected: [exact file:line]
-  - Standard: [relevant standard — WCAG, OWASP ASVS, RFC 7807 Problem Details, etc.]
+  - Standard: [OWASP ASVS, RFC 7807 Problem Details, Nielsen heuristic, etc.]
 """,
     context=context,
     toolsets=["file", "skills", "search", "todo"],
@@ -761,7 +761,7 @@ Async events (background jobs, emails sent, imports completed, file exports read
 - **Async button behavior:** Action buttons show a loading state and disable themselves on click to prevent duplicate submissions.
 - **Event-driven state:** If another user's action changes shared data (a colleague edits a doc, a payment status changes), does the current user's view update or serve stale data?
 - **Notification permission timing:** Push/email permission requested AFTER user has seen value — never on first page load.
-- **External link navigation:** An "Apply" or "Visit" button that opens an external site is expected behavior. Flag it as A11Y if the link lacks `aria-label="... (opens in new tab)"` when it opens a new tab, but do not score it as a NOTIFY failure unless the redirect itself can silently fail and leave the user stranded with no fallback URL.
+- **External link navigation:** An "Apply" or "Visit" button that opens an external site is expected behavior. Do not score it as a NOTIFY failure unless the redirect itself can silently fail and leave the user stranded with no fallback URL shown.
 
 #### VOICE — Tone Consistency
 
@@ -803,7 +803,7 @@ Every interactive component must handle all 8 visible states:
 - No `background-clip: text` gradient headline
 - No `#000000` or `#ffffff` — tint neutrals toward anchor hue
 - No bounce/spring easing on UI controls
-- No auto-rotating carousel without pause control (WCAG 2.2.2)
+- No auto-rotating carousel without pause control (distracting and inaccessible to users with cognitive differences)
 - Audio/video uses `autoplay muted loop playsinline`
 
 ---
@@ -910,7 +910,7 @@ Use the appropriate template:
 - Lead with what is working (positives first — goodwill is an asset)
 - Group issues by taxonomy code (IA / CONTENT / FORM / AUTH / VISUAL / MOBILE / PERF / SEO / TRUST / PWA / FLOW / EXCISE / GOODWILL / DELIGHT / NOTIFY / VOICE / AI-SLOP)
 - Every issue includes: what it is, why it matters, which standard it violates, how to fix it, AND a concrete implementation
-- Every finding cites at least one: WCAG 2.2, Nielsen heuristics, Core Web Vitals, OWASP ASVS, Material Design 3, Apple HIG, W3C WAI tutorials
+- Every finding cites at least one: Nielsen heuristics, Core Web Vitals, OWASP ASVS, Material Design 3, Apple HIG
 - Include a Quick Wins section (issues fixable in under 1 hour)
 - End with a Roadmap: P0 → P1 sprint items → P2 backlog → P3 polish
 
@@ -929,11 +929,11 @@ Each finding in the report must include all of the following in this order:
 | **Fix** | One sentence for PM/designer — what is wrong and what must change |
 | **Implementation** | Developer-ready detail — code, copy, or structure (see below) |
 | **Files affected** | Specific file:line list — not "related files" |
-| **Standard** | WCAG SC, Nielsen heuristic, CWV threshold, or other published standard |
+| **Standard** | Nielsen heuristic, CWV threshold, OWASP ASVS, Material Design 3, or other published standard |
 
 **Implementation field rules:**
-- Code issues (A11Y, VISUAL, MOBILE, PERF, FORM, AUTH) → before/after code block
-  - A11Y findings: always show DOM diff — broken markup vs. correct markup with proper labels/roles
+- Code issues (VISUAL, MOBILE, PERF, FORM, AUTH) → before/after code block
+  - FORM findings: always show DOM diff — broken markup vs. correct markup with proper visible labels
   - API/backend findings: always show request + broken response vs. correct response shape
 - Copy issues (CONTENT, VOICE, GOODWILL) → before/after copy rewrite
 - Structural issues (IA, FLOW, EXCISE, NOTIFY) → plain description of the structural change
@@ -1044,7 +1044,7 @@ Always include: at least one empty state, one error state, one auth flow, and th
 
 ## Limitations (State These When Relevant)
 
-- No automated tool alone determines full accessibility conformance — always pair with manual keyboard and screen reader checks
+- No automated tool alone determines full conformance — always pair tool output with manual walkthroughs of every critical journey
 - A URL audit cannot reveal code-level preventions (lint rules, component constraints)
 - A code audit cannot establish whether the rendered interface communicates clearly or preserves focus
 - Field performance (CrUX data) is only available for origins with sufficient real-user traffic

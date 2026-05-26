@@ -75,13 +75,12 @@ Test on real device or accurate emulation at 390×844 (iPhone 14) and 360×800 (
 - [ ] Auto-capitalise disabled for email and username fields
 - [ ] Fields tall enough to be easily tappable (minimum 44px height)
 - [ ] Responsive forms are single-column — no side-by-side fields on narrow screens
-- [ ] Keyboard does not cover active input fields (scroll into view on focus)
+- [ ] On-screen keyboard does not cover active input fields (page scrolls to keep field visible)
 - [ ] Real-time validation for complex fields — not post-submit
 - [ ] Error messages are inline, field-specific, and include a correction hint
-- [ ] Valid fields preserved after a submit error — focus moves to first invalid field
+- [ ] Valid fields preserved after a submit error
 - [ ] Button stays disabled until all required fields are filled (2+ field forms)
-- [ ] Tab / Next key advances to the next field in logical order
-- [ ] "Done" / "Go" / "Search" action on keyboard matches the expected form action
+- [ ] "Done" / "Go" / "Search" soft-keyboard action matches the expected form action
 
 ---
 
@@ -143,13 +142,13 @@ Test on real device or accurate emulation at 390×844 (iPhone 14) and 360×800 (
 Every interactive element must have all 8 states:
 
 - [ ] **Default** — base appearance
-- [ ] **Hover** — only via `@media (hover: hover)` (tablets with keyboard / pointer)
-- [ ] **Focus** — via `:focus-visible` for keyboard/switch users
+- [ ] **Hover** — only via `@media (hover: hover)` (tablets with pointer)
+- [ ] **Focus** — visible focus indicator via `:focus-visible`
 - [ ] **Active / Pressed** — immediate visual feedback
-- [ ] **Disabled** — visually distinct + `aria-disabled="true"` + explains why when tapped
-- [ ] **Loading** — skeleton or spinner with `aria-busy="true"`
-- [ ] **Error** — error colour + icon + `aria-invalid="true"`
-- [ ] **Success** — confirmation visual + `aria-live="polite"` announcement
+- [ ] **Disabled** — visually distinct + `cursor: not-allowed` + explains why when tapped
+- [ ] **Loading** — skeleton or spinner visible
+- [ ] **Error** — error colour + icon + inline error message
+- [ ] **Success** — confirmation visual shown
 
 ---
 
@@ -188,7 +187,7 @@ Every interactive element must have all 8 states:
 - [ ] All interactive elements have accessible names (labels, content descriptions)
 - [ ] Icons and image buttons have descriptive labels
 - [ ] Custom controls have correct accessibility roles
-- [ ] Decorative images are hidden from screen readers (`alt=""` / `accessibilityHidden`)
+- [ ] Decorative images do not clutter the visual layout or compete with primary content
 - [ ] Reading order matches visual order
 - [ ] Dynamic content changes announced via accessibility live regions
 - [ ] Modal/sheet focus is trapped while open; dismissed on back gesture or close button
@@ -305,7 +304,7 @@ Score each flagged issue across 5 factors (0–4 each, max 20):
 
 **Bands:** P0 = 17–20 (or override) · P1 = 13–16 · P2 = 8–12 · P3 = 1–7
 
-**P0 override:** Force P0 if the issue blocks sign-in, payment, core task completion, or keyboard/switch-access navigation on a critical journey — regardless of numeric score.
+**P0 override:** Force P0 if the issue blocks sign-in, payment, or core task completion on a critical journey — regardless of numeric score.
 
 ---
 

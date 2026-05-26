@@ -1,7 +1,7 @@
 {
   "id": "CATEGORY-###",
   "title": "Short, specific title describing the problem",
-  "category": "IA | CONTENT | FORM | AUTH | A11Y | VISUAL | MOBILE | PERF | SEO | TRUST | PWA | FLOW | EXCISE | GOODWILL | DELIGHT | NOTIFY | VOICE | AI-SLOP",
+  "category": "IA | CONTENT | FORM | AUTH | VISUAL | MOBILE | PERF | SEO | TRUST | PWA | FLOW | EXCISE | GOODWILL | DELIGHT | NOTIFY | VOICE | AI-SLOP",
   "priority": "P0 | P1 | P2 | P3",
   "severity_score": 0,
   "severity_breakdown": {
@@ -25,8 +25,8 @@
   },
   "why_it_matters": "User impact + business impact in 1–2 sentences.",
   "standards_violated": [
-    "WCAG 2.2 — [criterion number and name]",
-    "Nielsen heuristic — [heuristic name]"
+    "Nielsen heuristic — [heuristic name]",
+    "Core Web Vitals — [metric] / OWASP ASVS — [ref] / Material Design 3 — [guideline]"
   ],
   "fix": "One sentence — what to change and why. Written for product/design decision-makers.",
   "implementation": {
@@ -40,5 +40,5 @@
     "Observable condition 1 that confirms the fix is complete",
     "Observable condition 2"
   ],
-  "retest_method": "Playwright scenario | axe rerun | manual keyboard check | Lighthouse rerun | usability task"
+  "retest_method": "Playwright scenario | Lighthouse rerun | manual journey walkthrough | usability task"
 }
