@@ -352,29 +352,31 @@ Then navigate to the same URL with a mobile User-Agent simulation (use `browser_
 For P2/P3: skip annotation. Note "Screenshot: N/A — P2/P3".
 If app requires auth and no credentials provided: note "Screenshot: N/A — requires login credentials".
 
+**Screenshot annotation rule — always inject before screenshotting:**
+After injecting the red-outline JS and taking the screenshot, ALSO save a cropped version focused on the annotated element:
+- Full screenshot → `/home/brew/audits/screenshots/[slug]-[CODE-NNN].png`
+- Cropped annotated version → `/home/brew/audits/screenshots/[slug]-[CODE-NNN]-crop.png`
+Use the `-crop` version in the report. If crop is not possible, use the full screenshot. Both must show the red outline + badge annotation on the specific broken element — never a plain unannoted screenshot.
+
 Output format — return a structured finding list only (no full report):
 
-  ### [CODE-NNN] Title
-  - Score: [0-20] (UI:[0-4], Biz:[0-4], Reach:[0-4], Rec:[0-4], Comp:[0-4])
-  - Priority: P[0-3]
-  - Source: [URL] / [Screenshot] / [Frontend] / [Backend]
-  - Evidence: [exact file:line, CSS selector, or endpoint — never vague "relevant component"]
-  - Impact: [who is affected and how — e.g. "all keyboard-only users cannot tab to the search input"]
-  - Repro steps:
+  #### [CODE-NNN] — Title
+  **Priority: P[0-3] | Score: [0-20]**
+
+  ![CODE-NNN](/home/brew/audits/screenshots/[slug]-[CODE-NNN]-crop.png)
+
+  **What:** [1–2 sentences describing the issue in plain language for a product/design reader]
+  **Fix:** [one sentence — what to change and why]
+
+  - **Evidence:** [exact file:line, CSS selector, or endpoint]
+  - **Impact:** [who is affected and how]
+  - **Repro steps:**
       1. [user action]
       2. [user action]
       3. [observe the broken state]
-  - Expected: [what should happen]
-  - Actual: [what actually happens]
-  - Screenshot: ![CODE-NNN](/home/brew/audits/screenshots/[slug]-[CODE-NNN].png)
-      Allowed values:
-      • `![CODE-NNN](/home/brew/audits/screenshots/[slug]-[CODE-NNN].png)` — real annotated screenshot (use full absolute path, NOT ~/tilde)
-      • `![CODE-NNN](/home/brew/audits/screenshots/[slug]-[CODE-NNN].png) — analogous state: [description]` — closest observable equivalent
-      • N/A — login required and no credentials provided
-      • N/A — P2/P3 finding (skip annotation for lower priority)
-      "N/A — code-only finding" is NOT acceptable for P0/P1 if any related visible UI exists and is reachable
-      NEVER use ~/tilde paths — always use /home/brew/audits/screenshots/ prefix so the image embeds in the PDF.
-  - Fix: [one sentence — what to change and why, written for a PM or designer]
+  - **Expected:** [what should happen]
+  - **Actual:** [what actually happens]
+  - **Implementation:** [developer-ready detail — code snippet or structural description]
   - Implementation: [developer-ready detail — code snippet or structural description]
     — FORM findings: always include a DOM diff showing actual vs. expected markup:
         DOM (actual):   <input placeholder="Search programs">

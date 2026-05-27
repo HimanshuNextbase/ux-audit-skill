@@ -53,18 +53,21 @@ Score each audited journey on 4 axes. A single fail on any axis fails the journe
 |----|-------|----------|-------|
 | IA-001 | [title] | P[0–3] | [0–20] |
 
-**IA-001: [Title]**
-- **What:** [Specific description of the issue on the specific page/element]
-- **Why it matters:** [User impact + business impact]
-- **Standard violated:** [Nielsen heuristic / Core Web Vitals / OWASP ASVS / Cooper / Krug / Norman / etc.]
-- **Fix:** [One sentence — what to change and why. Written for product/design.]
-- **Implementation:** [Developer-ready detail. One of:]
-  - Code issue → before/after code block
-  - Copy issue → before/after copy rewrite
-  - Structural issue → plain description of the structural change
-  - Design constraint → the specific rule + implementation hint
-- **Screenshot:** ![ID](/home/brew/audits/screenshots/[slug]-[ID].png) *(use full `/home/brew/` absolute path — NOT `~/` — so image embeds in the PDF. `N/A` for P2/P3 or code-only findings.)*
-- **Evidence:** [Screenshot ref / page URL / element selector / file:line]
+#### IA-001 — [Title]
+**Priority: P[0–3] | Score: [0–20]**
+
+![IA-001](/home/brew/audits/screenshots/[slug]-IA-001-crop.png)
+
+**What:** [1–2 sentences describing the issue in plain language.]
+**Fix:** [One sentence — what to change and why. Written for product/design.]
+
+- **Evidence:** [exact selector / page URL / file:line]
+- **Impact:** [who is affected and how]
+- **Repro steps:** 1. [action] 2. [action] 3. [observe]
+- **Expected:** [correct behaviour]
+- **Actual:** [current broken behaviour]
+- **Implementation:** [developer-ready detail — before/after code, copy, or structure]
+- **Standard:** [Nielsen heuristic / Core Web Vitals / OWASP ASVS / Cooper / Krug / Norman]
 
 ---
 
