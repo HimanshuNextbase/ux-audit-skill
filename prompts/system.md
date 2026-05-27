@@ -241,6 +241,7 @@ Browse the entire product in a single linear sweep. Navigate each critical journ
 - Store as a draft finding list — do NOT take any screenshots yet
 - Do NOT re-navigate to a page you already visited
 - This pass should cost ~15–20 tool calls total regardless of how many findings you find
+- When clicking interactive elements (toggles, tabs, accordions), wait 600ms before reading DOM state — intermediate animation states are not real UI states
 
 After Pass 1: score and assign final priorities to all findings (P0/P1/P2/P3).
 
@@ -321,6 +322,27 @@ const data = await fetch('/api/programs').then(r => r.json());
   console.log(JSON.stringify(data));
 })();
 ```
+
+**ANIMATION & TRANSITION RULE — wait for settled state before reading DOM or screenshotting:**
+
+Interactive elements like pricing toggles, tabs, accordions, and animated counters transition through intermediate states that do NOT reflect the real UI. Capturing DOM text or a screenshot during a transition produces false evidence.
+
+Rules:
+1. **After any `browser_click`** (toggle, tab, button, accordion) — inject a 600ms wait before reading DOM text or taking a screenshot:
+   ```js
+   (async () => { await new Promise(r => setTimeout(r, 600)); })();
+   ```
+2. **Animated number counters** (slot-machine style price reveals) — NEVER read raw DOM text nodes from an animated counter mid-spin. Digits exposed during animation (e.g., `0 1 2 3 4 5 6 .99`) are not real prices. Wait 600ms after page load or after the triggering interaction, then read. Or read from `data-*` attributes or `aria-label` instead of `.textContent`.
+3. **Pricing toggle (Monthly/Yearly)** — click, wait 600ms, THEN read all visible prices. Verify the billing-period label (e.g., "Billed monthly" vs. "Billed yearly") matches what you expect before writing the finding. If the label matches the toggled state, the toggle is working — do NOT report it as broken.
+4. **Modals / overlays** — after dismiss, wait 400ms for the overlay fade-out before reading or screenshotting the underlying page.
+5. **Lazy-load / skeleton screens** — after initial navigation, scroll the full page and wait 1 second before doing Pass 1 content read. Content that appears to be missing may just be unloaded.
+
+**FALSE POSITIVE RULE — verify before filing a pricing/interactive-state bug:**
+Before writing any finding about prices being wrong, toggles not working, or content being broken:
+1. Confirm the element is in its settled state (no animation class, no transition CSS)
+2. Read the billing-period label on the page and confirm it matches what you toggled to
+3. Cross-check at least two price values against the toggle state
+If all three pass, the feature is working — do not file a finding.
 
 For every P0 and P1 finding:
 1. Open the browser and navigate to the EXACT page where the issue exists (not the audit report, not a file, the actual app URL/localhost)
