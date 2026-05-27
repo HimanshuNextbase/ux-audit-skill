@@ -3,7 +3,7 @@
 **URL / Repo:** [target]
 **Audit type:** Full / Performance / Quick scan
 **Input mode:** URL / URL + credentials / Frontend repo / Full-stack + preview / Screenshots
-**Auditor:** [name or "AI agent"]
+**Auditor:** AI agent
 **Date:** [date]
 **Pages / flows reviewed:** [list]
 **Viewports tested:** Desktop 1440×900 · Mobile 390×844
@@ -157,6 +157,17 @@ Score each audited journey on 4 axes. A single fail on any axis fails the journe
 
 ---
 
+### PSYCH — Behavioral Psychology
+
+**Cognitive load:** [pass / flagged — 1 sentence]
+**Social proof quality:** [specific or generic? placed at hesitation point?]
+**Anxiety signals at commitment steps:** [inline reassurance present or absent — name the steps]
+**Reciprocity:** [gives value before asking for commitment? yes / no]
+**Default choice architecture:** [defaults sensible and pre-set? yes / no]
+**Peak-end rule:** [success state specific and personal? yes / no]
+
+---
+
 ### GOODWILL — Trust Reservoir
 
 **Drains identified:**
@@ -197,6 +208,24 @@ Proactive improvements — these are not bugs. They are specific, actionable sug
 
 **Reference:**
 [Product or pattern that does this well, or the UX principle applied]
+
+---
+
+## Psychological Barriers
+
+| Commitment moment | User's fear/doubt | Current signal | Required signal |
+|-------------------|-------------------|----------------|----------------|
+| [step name] | [question in user's head] | [what the UI currently gives] | [what it should give] |
+
+---
+
+## Strategic UX Position
+
+**Brand promise vs. UX reality:** [Does the UX deliver what the brand promises? One sentence.]
+**Differentiation:** [The one UX thing this product does that competitors don't — or "None identified."]
+**Activation moment:** [The exact step where the user first feels "this is worth it." Count the steps before it.]
+**Retention mechanic:** [What brings the user back, or "Not designed in — relies on habit/memory."]
+**Identity hook:** [How using this product makes the user feel about themselves, or "None — pure utility."]
 
 ---
 

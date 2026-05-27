@@ -789,6 +789,42 @@ Most AI-generated UIs achieve only the behavioral layer (it works). Flag if visc
 - Loading state with personality — tied to brand, not a generic spinner
 - Easter egg / unexpected detail — a pun, inside reference, or hidden touch
 
+#### PSYCH — Behavioral Psychology Audit
+
+Most UX checklists catch broken flows. This section catches flows that work technically but fail psychologically — where users bail not because something is broken, but because they're afraid, confused about the cost, or running out of motivation.
+
+**Cognitive load per screen:**
+- Does any screen force the user to make more than 3 unrelated decisions before they can proceed? High decision density → abandonment. Progressive disclosure is pass.
+- Is the next action always obvious without reading? If the user has to pause and scan, cognitive load is too high.
+
+**Social proof quality and placement:**
+- Social proof present AND specific? ("12,847 creators, avg 4.7★ on 2,300 reviews" converts; "creators love us" is invisible.)
+- Is it placed at the moment of hesitation — near CTAs, near price, near the commitment step — or marooned on a testimonials page the user never reaches?
+
+**Anxiety signals at commitment points:**
+For each high-commitment step (sign-up, payment, content upload, sharing), ask: what fear or doubt arises here? Flag if the UI fails to preemptively answer it inline.
+- Sign-up: "Will I get spam?" / "Can I delete this?" → reassurance copy needed next to the submit button
+- Payment: "Is this safe?" / "Will I be auto-charged?" → security badge + clear billing terms at point of payment
+- Content upload/share: "Who can see this?" / "Can I undo?" → inline privacy hint before submit
+Missing inline reassurance at a commitment step = PSYCH finding.
+
+**Progress and completion bias:**
+- Multi-step flows show a progress indicator so the user feels partially invested in completion?
+- Early onboarding steps low-friction (email only) to build momentum before asking for more?
+- First meaningful success (aha moment) celebrated with a specific, personal confirmation — not a generic "Done."?
+
+**Reciprocity (give before you ask):**
+- Does the product give meaningful value before asking for account creation or payment? If not, flag it — asking for commitment before demonstrating value is the single most common conversion failure.
+- Is the ask proportional to the value shown? (Credit card before seeing results = reciprocity failure.)
+
+**Default choice architecture:**
+- Are defaults set to the recommended/most-popular option, or does the user have to opt in to sensible behavior?
+- Are form fields pre-filled with context-appropriate defaults where possible?
+
+**Peak-end rule (final impression):**
+- What is the very last moment of the primary flow? Is the success state specific, personal, and clearly final?
+- "Done." or no success state = fail. A specific confirmation with the user's name/result + a next action = pass.
+
 #### NOTIFY — Notification & Async UX
 
 Async events (background jobs, emails sent, imports completed, file exports ready) are where most SaaS products fail silently.
@@ -966,6 +1002,32 @@ Example: "Empty search results say 'No agents found.' Better: 'No agents match y
 Name 1–2 specific patterns from comparable products (app stores, marketplaces, SaaS tools) that would directly apply here. Be specific — name the pattern and describe how to apply it to this product's exact context.
 Example: "GitHub Marketplace shows 'Works with your current plan' badges on every listing. AgentPlace could show 'Compatible with OpenClaw v2+' on agent cards — buyers would know compatibility before clicking in."
 
+**EMOTIONAL JOURNEY MAPPING — What does the user feel at each step?**
+For the primary critical journey, plot the emotional arc from entry to success. Don't describe steps — describe feelings.
+- Create a simple arc: [Landing] → [step 2] → ... → [success moment]
+- Mark each step: confident (+), neutral (0), uncertain (–), anxious (– –)
+- Identify the lowest-confidence valley before the payoff. The valley depth × duration is what kills conversion.
+- Ask: can the valley be shortened (remove steps), or can a micro-delight be injected into it?
+- Example: "User arrives curious (+), reads feature list and feels unsure about complexity (–), starts upload and worries about output quality (– –), sees the result and feels surprised and pleased (+3). The valley spans 3 steps. Shortening or reassuring at step 2 would raise conversion."
+- Include this as a PSYCH-001 entry in the report if the valley is long or deep.
+
+**PSYCHOLOGICAL BARRIERS — What stops users from committing?**
+For each conversion moment (sign-up, first upload, payment, first share), name the specific fear/doubt that arises, what the UI currently provides as reassurance, and what it should provide.
+Output as a compact table in the report:
+| Commitment moment | User's fear/doubt | Current signal | Required signal |
+|-------------------|-------------------|----------------|----------------|
+| [step name] | [the question in the user's head] | [what the UI currently gives them] | [what it should give] |
+A row with "none" in the Current signal column is a PSYCH finding. Use the table, not prose.
+
+**STRATEGIC UX ALIGNMENT — Does the UX reinforce the brand promise?**
+This is the one high-altitude question that sits above all findings. Answer it in 3–5 sentences:
+1. **Brand promise vs. UX reality:** What does the brand promise (speed, simplicity, quality, power)? Does the UX deliver that at every touchpoint, or is there a gap?
+2. **Differentiation through UX:** Name one thing this product's UX does that a direct competitor's does not. If you cannot name one, the product is undifferentiated at the experience layer — flag it.
+3. **Activation moment (aha moment):** At what exact step does the user first feel "this is worth it"? Every step before that moment is pure cost — name them, count them.
+4. **Retention mechanic:** After the first session, what brings the user back? Is it designed in (trigger, progress saved, social loop, email re-engagement) or left to chance?
+5. **Identity hook:** Does using this product make the user feel something specific about themselves ("I'm a creator" / "I'm on top of this")? If not, it's a pure utility — harder to retain. Name the hook or flag its absence.
+Include this as a STRAT-001 entry in the report.
+
 **NEW FEATURE IDEAS — What new capability would meaningfully improve the user's experience?**
 Based on what you observed about the users' goals and the product's current gaps, suggest 2–3 specific new features or interactions the product does not yet have but would directly serve the user's JTBD. These are not fixes — they are additive ideas.
 
@@ -1004,6 +1066,27 @@ Add a dedicated section to the report after the findings:
 ```
 
 Produce 3–6 UX-OPP recommendations per audit. Fewer is better — only include suggestions that are genuinely specific and actionable for this product. Generic suggestions are worse than none.
+
+Also produce a **Psychological Barriers** table and a **Strategic UX Position** block:
+
+```
+## Psychological Barriers
+
+| Commitment moment | User's fear/doubt | Current signal | Required signal |
+|-------------------|-------------------|----------------|----------------|
+| [step] | [the question in the user's head] | [what the UI gives now] | [what it should give] |
+```
+Include one row per high-commitment step. A "none" in Current signal = PSYCH finding, reference it here.
+
+```
+## Strategic UX Position
+
+**Brand promise vs. UX reality:** [One sentence — does the UX deliver what the brand promises?]
+**Differentiation:** [The one UX thing this product does that competitors don't — or "None identified."]
+**Activation moment:** [The exact step where the user first feels "this is worth it." Count steps before it.]
+**Retention mechanic:** [What brings the user back, or "Not designed in — relies on habit/memory."]
+**Identity hook:** [How using this product makes the user feel about themselves, or "None — pure utility."]
+```
 
 Also produce a **New Feature Ideas** subsection within UX Recommendations:
 
@@ -1059,14 +1142,16 @@ Use the appropriate template:
 
 **Always:**
 - Lead with what is working (positives first — goodwill is an asset)
-- Group issues by taxonomy code (IA / CONTENT / FORM / AUTH / VISUAL / MOBILE / PERF / SEO / TRUST / PWA / FLOW / EXCISE / GOODWILL / DELIGHT / NOTIFY / VOICE / AI-SLOP)
-- After all findings, always include a **UX Recommendations** section (UX-OPP-001…NNN) and a **New Feature Ideas** section (IDEA-001…NNN) — these are mandatory in every full audit report
+- Group issues by taxonomy code (IA / CONTENT / FORM / AUTH / VISUAL / MOBILE / PERF / SEO / TRUST / PWA / FLOW / EXCISE / GOODWILL / DELIGHT / PSYCH / NOTIFY / VOICE / AI-SLOP)
+- After all findings, always include: **UX Recommendations** (UX-OPP-001…NNN), **Psychological Barriers** table, **Strategic UX Position** block, and **New Feature Ideas** (IDEA-001…NNN) — all mandatory in every full audit report
 - Every issue includes: what it is, why it matters, which standard it violates, how to fix it, AND a concrete implementation
 - Every finding cites at least one: Nielsen heuristics, Core Web Vitals, OWASP ASVS, Material Design 3, Apple HIG
 - Include a Quick Wins section (issues fixable in under 1 hour)
 - End with a Roadmap: P0 → P1 sprint items → P2 backlog → P3 polish
 
 **Report cleanliness rules — do NOT include in the final report:**
+- **Step 0 product understanding block** — the "Step 0 — Understand the User & Their Product" heading and its content are internal workflow guidance. Never copy this section header or the 0.1/0.2/0.3/0.4 sub-blocks into the final report. Only the confirmed product summary from Step 0.4 may appear — briefly, in the report header — but do not label it "Step 0."
+- **Auditor field** — always write `Auditor: AI agent` in the report header. Do not write your agent name ("Audit"), a placeholder, or leave it blank.
 - The Step 3 self-critique table (Philosophy / Hierarchy / Execution / Specificity / Restraint / Variety scores) — internal only. Run it silently to calibrate the AI-SLOP finding, then omit the table from the report entirely.
 - NOTIFY section when entirely untestable — skip it or write one sentence max: "Async UX not testable without a completed generation run."
 - FLOW "What-if failures tested" as a separate section — fold into the FLOW findings themselves.
@@ -1075,6 +1160,14 @@ Use the appropriate template:
 - Retest Criteria section — fold into the Roadmap items as one-line acceptance criteria, not a separate section.
 - DELIGHT, GOODWILL, VOICE — keep these but limit to 3–5 lines each. Do not expand into sub-sections.
 - Supplementary sections (EXCISE, SEO, TRUST Security Baseline, AI-SLOP) that have no findings — either skip entirely or write one sentence ("No issues found").
+
+**Plain language rules — apply to every field in every finding:**
+- **Issue title** — plain English description of the problem: "Page loads in 18 seconds — most users leave" not "PERF-001: LCP threshold exceeded." The ID goes in parentheses after, not as the title.
+- **What field** — written for a product manager or business owner, not a developer. No acronyms without definition. No "the aforementioned component" or passive voice. If a teenager could not understand it, rewrite it.
+- **Fix field** — one sentence. Starts with a verb. Says specifically what to change: "Replace the full-screen consent popup with a small banner at the bottom that lets users browse before accepting cookies."
+- **Implementation field** — can be technical (for developers), but must be preceded by a one-line plain summary of what's changing and why.
+- **Executive summary** — 2–3 sentences. Grade + biggest risk + biggest strength. Should be readable in 20 seconds. Never begin with "The audit reveals..."
+- **UX Recommendations** — "Suggested experience" must read like a description to a friend, not a design spec: "Instead of showing the studio page without warning, show a quick 'Heads up — this opens MaxStudio' tooltip before the click."
 
 **Target report length: 400–550 lines max for a typical full audit (6–10 findings). Every line must earn its place.**
 
@@ -1194,6 +1287,7 @@ If the user confirms, use `skill_manager` to patch the relevant file (`checklist
 | EXCISE | High | Friction accounting — Cooper's 15 unintentional friction patterns |
 | GOODWILL | High | Trust reservoir — drains and builders (Krug) |
 | DELIGHT | Medium | Desirability — Norman's 3 layers, delight signals, brand voice |
+| PSYCH | High | Behavioral psychology — cognitive load, social proof quality, anxiety signals at commitment points, reciprocity, completion bias, peak-end rule |
 | NOTIFY | High | Notification and async UX — proactive vs reactive, background task feedback |
 | VOICE | Medium | Tone consistency across marketing, app, errors, emails |
 | AI-SLOP | High | AI-generated UI fingerprints — 50+ patterns |
