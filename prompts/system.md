@@ -323,24 +323,40 @@ const data = await fetch('/api/programs').then(r => r.json());
 })();
 ```
 
-**ANIMATION & TRANSITION RULE — wait for settled state before reading DOM or screenshotting:**
+**ANIMATION & TRANSITION RULE — wait for page to fully settle before reading DOM or screenshotting:**
 
-Interactive elements like pricing toggles, tabs, accordions, and animated counters transition through intermediate states that do NOT reflect the real UI. Capturing DOM text or a screenshot during a transition produces false evidence.
+JavaScript-rendered content, animated counters, toggle transitions, skeleton screens, and lazy-loaded sections all produce intermediate DOM states that do NOT reflect the real UI. Reading DOM text or taking a screenshot before the page settles produces false evidence.
 
-Rules:
-1. **After any `browser_click`** (toggle, tab, button, accordion) — inject a 600ms wait before reading DOM text or taking a screenshot:
-   ```js
-   (async () => { await new Promise(r => setTimeout(r, 600)); })();
-   ```
-2. **Animated number counters** (slot-machine style price reveals) — NEVER read raw DOM text nodes from an animated counter mid-spin. Digits exposed during animation (e.g., `0 1 2 3 4 5 6 .99`) are not real prices. Wait 600ms after page load or after the triggering interaction, then read. Or read from `data-*` attributes or `aria-label` instead of `.textContent`.
-3. **Pricing toggle (Monthly/Yearly)** — click, wait 600ms, THEN read all visible prices. Verify the billing-period label (e.g., "Billed monthly" vs. "Billed yearly") matches what you expect before writing the finding. If the label matches the toggled state, the toggle is working — do NOT report it as broken.
-4. **Modals / overlays** — after dismiss, wait 400ms for the overlay fade-out before reading or screenshotting the underlying page.
-5. **Lazy-load / skeleton screens** — after initial navigation, scroll the full page and wait 1 second before doing Pass 1 content read. Content that appears to be missing may just be unloaded.
+**Step 1 — after every `browser_navigate`, run this "page settled" check before doing anything else:**
+```js
+(async () => {
+  // Wait for document to finish loading
+  await new Promise(resolve => {
+    if (document.readyState === 'complete') { resolve(); return; }
+    window.addEventListener('load', resolve, { once: true });
+  });
+  // Wait for all CSS animations and transitions to finish
+  const anims = document.getAnimations();
+  if (anims.length > 0) {
+    await Promise.all(anims.map(a => a.finished.catch(() => {})));
+  }
+  // Extra 800ms buffer for JS-driven state updates (React renders, Vue reactivity, counter animations)
+  await new Promise(r => setTimeout(r, 800));
+  console.log(JSON.stringify({ settled: true, readyState: document.readyState }));
+})();
+```
+Only proceed (scroll, read DOM, take screenshots) after this returns `{"settled": true, "readyState": "complete"}`.
+
+**Step 2 — after every `browser_click` on an interactive element** (toggle, tab, accordion, dropdown), run the same check again before reading DOM state or taking a screenshot. State transitions happen asynchronously; the DOM immediately after a click is not the settled state.
+
+**Animated number counters** (slot-machine style price reveals) — NEVER read raw DOM text nodes from an animated counter mid-spin. Digits exposed during animation (e.g., `0 1 2 3 4 5 6 .99`) are not real prices. Always read after the settled-check completes. Prefer `data-*` attributes or `aria-label` over `.textContent` for price values.
+
+**Pricing toggle (Monthly/Yearly)** — click, run the settled check, THEN read all visible prices. Verify the billing-period label (e.g., "Billed monthly" vs. "Billed yearly") matches the toggled state before writing any finding. If the label matches the toggled state, the toggle is working — do NOT report it as broken.
 
 **FALSE POSITIVE RULE — verify before filing a pricing/interactive-state bug:**
 Before writing any finding about prices being wrong, toggles not working, or content being broken:
-1. Confirm the element is in its settled state (no animation class, no transition CSS)
-2. Read the billing-period label on the page and confirm it matches what you toggled to
+1. Run the settled check — confirm `readyState: complete` and no active animations
+2. Read the billing-period label and confirm it matches what you toggled to
 3. Cross-check at least two price values against the toggle state
 If all three pass, the feature is working — do not file a finding.
 
