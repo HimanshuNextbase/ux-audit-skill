@@ -233,6 +233,29 @@ Search README.md, package.json (`homepage`), vercel.json, netlify.toml, wrangler
 **Case 4 — Pure backend/API only (no web entry point anywhere):**
 Skip browser checks. Note "Rendered view unavailable — backend-only code" at top of findings. Do not skip the rest of the audit.
 
+**TWO-PASS STRATEGY — always follow this order. It cuts tool calls by 40–50% vs. interleaving discovery and screenshots.**
+
+**PASS 1 — Discovery (no screenshots):**
+Browse the entire product in a single linear sweep. Navigate each critical journey from start to end. While browsing:
+- Note every issue you observe: what it is, which URL/page it's on, its CSS selector or evidence, estimated priority
+- Store as a draft finding list — do NOT take any screenshots yet
+- Do NOT re-navigate to a page you already visited
+- This pass should cost ~15–20 tool calls total regardless of how many findings you find
+
+After Pass 1: score and assign final priorities to all findings (P0/P1/P2/P3).
+
+**PASS 2 — Evidence (P0/P1 only, grouped by URL):**
+Take screenshots ONLY for P0 and P1 findings. P2/P3 get no screenshots — note "Screenshot: N/A — P2/P3".
+
+Before making any browser call in Pass 2:
+1. Group all P0/P1 findings by their page URL
+2. For each unique URL, navigate ONCE and handle ALL findings on that page in one visit:
+   - Inject all annotators for all findings on that page in a single JS call (or sequential JS calls before any screenshot)
+   - Take one viewport screenshot per annotated element — do NOT navigate away and back for each finding
+3. This means: 3 findings on the same page = 1 navigate + 3 inject + 3 screenshot calls (not 3×navigate + 3×inject + 3×screenshot)
+
+If a finding is on a page that was already visited in Pass 1 for another finding — handle both in a single navigation. Never revisit a URL more than once in Pass 2.
+
 Work through every Lane A category in system.md Step 2:
   IA, CONTENT, FORM, AUTH, VISUAL, MOBILE, PERF,
   SEO, TRUST, PWA (if applicable),
@@ -240,6 +263,7 @@ Work through every Lane A category in system.md Step 2:
   EXCISE (Cooper's friction catalog),
   GOODWILL (trust drains and builders),
   DELIGHT (Norman's layers + delight signals),
+  PSYCH (behavioral psychology — cognitive load, social proof, anxiety signals, reciprocity, defaults, peak-end),
   NOTIFY (async UX),
   VOICE (tone consistency).
 
@@ -252,6 +276,9 @@ Then run the UX Advisory pass from system.md Step 3.5:
   INFORMATION HIERARCHY — is the most important thing most prominent?
   EMPTY & ZERO STATES — do they guide or just inform?
   PATTERN UPGRADE — what do best-in-class products do that this one doesn't?
+  EMOTIONAL JOURNEY MAPPING — emotional arc + confidence valley
+  PSYCHOLOGICAL BARRIERS — commitment-moment fear/doubt table
+  STRATEGIC UX ALIGNMENT — brand promise, differentiation, activation moment, retention, identity hook
   NEW FEATURE IDEAS — 2–4 specific additive ideas grounded in observed user needs.
 
 **CWV Measurement — Run immediately after first navigation, before any interaction:**
@@ -569,9 +596,14 @@ elif len(tasks) > 1:
 - User gives URL + frontend code → `tasks` has 2 entries (A + B). Lane A uses the provided URL directly.
 - User gives URL + frontend + backend → `tasks` has 3 entries. Parallel batch.
 
-### Journey splitting (Lane A only, 3+ journeys)
+### Journey splitting (Lane A only, 5+ journeys OR 3+ journeys on a large SaaS)
 
-For complex SaaS products with many journeys, split Lane A into journey groups to avoid context saturation in a single subagent:
+For products with many distinct journeys, split Lane A into parallel subagents by journey group. This is the single biggest speed lever for complex audits — two parallel subagents each taking 30 tool calls beats one sequential subagent taking 60.
+
+**When to split:**
+- 5+ journeys on any product → always split into 2 parallel groups
+- SaaS with 3–4 journeys where the flows touch separate parts of the UI (e.g., onboarding vs. billing) → split
+- Single landing page or ≤2 journeys → single subagent is fine
 
 ```python
 delegate_task(tasks=[
@@ -580,7 +612,7 @@ delegate_task(tasks=[
 ])
 ```
 
-Merge duplicate findings (same issue found by both) into a single entry — keep the higher score.
+Each journey-group subagent follows the two-pass strategy independently (its own discovery pass, then its own evidence pass). Merge duplicate findings (same issue found by both groups) into a single entry — keep the higher score.
 
 ### After subagents complete
 
