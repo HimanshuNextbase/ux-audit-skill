@@ -136,6 +136,9 @@ If the user has already provided all this context, confirm your understanding an
 
 ## Step 1 — Inventory the Target
 
+**SKILL LOADING RULE — load system.md ONCE, nothing else:**
+After loading `prompts/system.md` you have everything you need. Do NOT also load `checklists/site.md`, `templates/full-report.md`, `ux-audit-evidence-capture`, or any other skill files. The checklist is in Step 2 below. The report template is in Step 5 below. Loading extra files wastes 20,000+ tokens of context before the audit even starts.
+
 Before scoring issues, map the product:
 
 - List key pages and flows to cover (use representative sampling — not every page, cover every template)
@@ -160,9 +163,9 @@ Look at what the user actually gave you. Decide the work structure from that —
 - Frontend code → code analysis work (Lane B)
 - Backend code → server-pattern work (Lane C)
 
-If there is only one input type and the scope is narrow (quick scan, single page), do the work inline — no delegation overhead needed. If the scope is deep, or if there are multiple independent input types that can run in parallel, use `delegate_task`. Use batch mode only when you have 2 or more genuinely independent tasks.
+**MANDATORY DISPATCH RULE:** When a URL is provided, ALWAYS dispatch a Lane A subagent — never do browser work inline in the main agent. The main agent's context must stay small (dispatch + aggregate only). Inline work is only permitted for a single-screenshot-only audit with no URL.
 
-**Subagents are a tool, not a template.** Use them when they speed things up or protect the main agent's context. Don't use them when the task is small enough to do directly.
+**Subagents are not optional for URL audits.** Every browser_navigate, browser_screenshot, and browser_console call adds tokens to context. 40–50 browser tool calls in the main agent grows context past the 524 timeout threshold.
 
 When delegating, each subagent receives:
 - The product understanding summary from Step 0.4 (verbatim — the subagent has no access to the parent conversation)
@@ -200,9 +203,8 @@ Dispatch if URL, screenshots, or frontend code was provided. If no URL was given
 delegate_task(
     goal="""You are a Lane A UX auditor. Audit the rendered experience of this product.
 
-Load these skill files in order:
-  skill_view("ux-audit", "prompts/system.md")         # full audit procedure
-  skill_view("ux-audit", "checklists/site.md")         # or app.md per product type
+Load this skill file:
+  skill_view("ux-audit", "prompts/system.md")         # full audit procedure — checklist is in Step 2
 
 **Step 0: URL Acquisition — do this first, before any auditing**
 
@@ -235,13 +237,21 @@ Skip browser checks. Note "Rendered view unavailable — backend-only code" at t
 
 **TWO-PASS STRATEGY — always follow this order. It cuts tool calls by 40–50% vs. interleaving discovery and screenshots.**
 
+**BROWSER_CONSOLE DATA CAP — never extract full page text:**
+`document.body.innerText` on a complex SaaS page can be 50–100KB. That one field can push context past the timeout threshold. Rules:
+- NEVER use `document.body.innerText` or `document.body.innerHTML` in a browser_console call
+- Extract ONLY what you need: specific selectors, nav items, headings, CTA text, form labels, error messages
+- Example of what NOT to do: `{text: document.body.innerText}`
+- Example of what to do: `{nav: [...document.querySelectorAll('nav a')].map(a=>a.textContent.trim()), h1: document.querySelector('h1')?.textContent, cta: [...document.querySelectorAll('button')].map(b=>b.textContent.trim()).slice(0,10)}`
+- If you need page structure, use `browser_snapshot` (it's already compressed) instead of extracting raw text
+
 **PASS 1 — Discovery (no screenshots):**
 Browse the entire product in a single linear sweep. Navigate each critical journey from start to end. While browsing:
 - Note every issue you observe: what it is, which URL/page it's on, its CSS selector or evidence, estimated priority
 - Store as a draft finding list — do NOT take any screenshots yet
 - Do NOT re-navigate to a page you already visited
 - This pass should cost ~15–20 tool calls total regardless of how many findings you find
-- When clicking interactive elements (toggles, tabs, accordions), wait 600ms before reading DOM state — intermediate animation states are not real UI states
+- When clicking interactive elements (toggles, tabs, accordions), run the settled-check before reading DOM state — intermediate animation states are not real UI states
 
 After Pass 1: score and assign final priorities to all findings (P0/P1/P2/P3).
 
@@ -634,14 +644,15 @@ elif len(tasks) > 1:
 - User gives URL + frontend code → `tasks` has 2 entries (A + B). Lane A uses the provided URL directly.
 - User gives URL + frontend + backend → `tasks` has 3 entries. Parallel batch.
 
-### Journey splitting (Lane A only, 5+ journeys OR 3+ journeys on a large SaaS)
+### Journey splitting (Lane A only — split whenever 3+ pages are named)
 
-For products with many distinct journeys, split Lane A into parallel subagents by journey group. This is the single biggest speed lever for complex audits — two parallel subagents each taking 30 tool calls beats one sequential subagent taking 60.
+Parallel subagents are the single biggest speed lever. Each subagent gets a fresh context so large audits never hit the 524 timeout. One sequential subagent with 60 tool calls easily exceeds 100k tokens and hits the 120s Cloudflare timeout.
 
 **When to split:**
+- User names 3+ specific pages (e.g. "home page, dashboard, pricing") → dispatch 1 subagent per page in parallel
 - 5+ journeys on any product → always split into 2 parallel groups
-- SaaS with 3–4 journeys where the flows touch separate parts of the UI (e.g., onboarding vs. billing) → split
-- Single landing page or ≤2 journeys → single subagent is fine
+- SaaS with 3–4 distinct flows touching separate UI areas (onboarding vs. billing) → split
+- Single page or ≤2 pages → single subagent is fine
 
 ```python
 delegate_task(tasks=[
