@@ -213,6 +213,23 @@ The goal is always to get a rendered, screenshottable URL. Prefer this order:
 **Case 1 — URL was provided in context:**
 Use it directly. If it returns a login page and no credentials were provided, ask the user for credentials before taking any screenshots.
 
+**GEO-BLOCK / UNREACHABLE SITE — detect fast, stop immediately:**
+
+The audit server is in **Helsinki, Finland (Hetzner)**. Many government portals, regional services, and state transport sites (especially `.gov.in`, `.nic.in`, `.in` state sites, `.gov.*`) are IP-firewalled to their local country and will time out from this server.
+
+**Detection flow — do this before any other browser work:**
+1. Run one `browser_navigate` attempt. If it succeeds, continue normally.
+2. If it fails with `ERR_TIMED_OUT`, `CDP command timed out`, or similar — do a **single quick TCP probe**:
+   ```bash
+   python3 -c "import socket; s=socket.socket(); s.settimeout(5); r=s.connect_ex(('HOSTNAME', 443)); print('open' if r==0 else 'blocked'); s.close()"
+   ```
+3. If TCP is blocked → **stop all further network attempts immediately**. Do NOT also try curl, tracepath, Lighthouse, PageSpeed API — they will all fail and waste minutes.
+4. Instead, send this message to the user and wait:
+   > "This site (`URL`) is unreachable from our audit server in Helsinki, Finland. It appears to block international/datacenter IPs — common for government and regional portals. To audit it, please **share screenshots** of the pages you want reviewed, and I'll do a full UX audit from those."
+5. When the user provides screenshots, proceed using Lane A screenshot mode (what you CAN assess from screenshots: layout, hierarchy, copy, CTAs, forms, navigation, colour, spacing, anti-slop; what you CANNOT: interactive states, performance, component state changes).
+
+**Do NOT** write a "P0 — site unreachable" report for a geo-blocked site. That is not a UX finding — it is a network limitation of the audit environment. Only file a real "availability" finding if you have evidence the site is down for its actual target users (e.g., user confirms it, uptime monitor shows outage).
+
 **Case 2 — Frontend or full-stack code was provided (no URL):**
 Run it locally. A locally running app is ALWAYS screenshottable regardless of whether the deployed version is private or behind auth. Dev mode usually bypasses auth or shows the full UI shell.
 
