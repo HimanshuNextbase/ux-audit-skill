@@ -784,6 +784,17 @@ Work through each category below. Flag every issue with its taxonomy code.
 - Skeleton loading used for content areas, not just spinners
 - Chart areas have reserved dimensions to prevent layout shift
 
+**PERF priority thresholds — use these when scoring, not just "P2 for any perf issue":**
+| Metric | P1 threshold | P2 threshold | P3 |
+|--------|-------------|-------------|-----|
+| LCP | > 4 s | 2.5–4 s | borderline 2.3–2.5 s |
+| TTI | > 10 s | 5–10 s | 3–5 s |
+| TBT | > 600 ms | 300–600 ms | 200–300 ms |
+| CLS | > 0.25 | 0.1–0.25 | 0.05–0.1 |
+| INP | > 500 ms | 200–500 ms | borderline |
+
+LCP > 4s = P1 regardless of product type. TTI > 10s (e.g. 18s) = P1 for any consumer product — users leave. Score these correctly; do not downgrade to P2 because "it's a performance issue."
+
 #### SEO
 - Every page has a unique, descriptive title tag and meta description
 - No indexing blocks on revenue/conversion pages
@@ -797,6 +808,16 @@ Work through each category below. Flag every issue with its taxonomy code.
 - Location access requested in context with permission
 - Contact access requests permission
 - Security headers reviewed (use MDN HTTP Observatory)
+- **Claim vs. reality consistency** — Check every trust claim on marketing/pricing pages against what the actual product does:
+  - "100% anonymous" / "private" / "no data stored" → does signup require email, phone, or tracking pixels? If yes, this is a P1 broken promise.
+  - "Free" / "no credit card required" CTAs → what is actually free? Limited credits? Limited features only? Ambiguity = trust drain.
+  - "Cancel anytime" → is there a self-serve cancel option? If support ticket required, that's deceptive.
+  - Flag each contradiction as a separate finding: `TRUST — "[claim]" on [page] contradicts [actual behavior] at [step]`
+- **Brand name consistency** — Check whether the product name is consistent across: site header, modal dialogs, iOS/Android app name, email sender name, billing descriptor. A different name in a modal ("Download BiBi Chat" on a site called "VirtualGF") reads as a scam to users and must be flagged as a P1 trust issue.
+- **Adult/NSFW-adjacent products** — If the product shows suggestive imagery or adult content on public pages:
+  - Is there an age gate on the landing page (not just the signup form)?
+  - Does signup have explicit 18+ confirmation checkbox adjacent to Create Account?
+  - File both as separate findings if absent — the landing page gate and the signup gate are independent requirements.
 
 #### PWA (if applicable)
 - Installable (manifest + service worker)
@@ -857,6 +878,7 @@ The trust reservoir is finite. Drains and builders both have compound effect —
 - Faux sincerity / corporate-speak that says nothing ("We're passionate about your journey")
 - Sizzle blocking the path (marketing imagery in the way of task completion)
 - Amateurish errors (broken images, placeholder text, spelling mistakes in UI)
+- **False claims listed as builders** — do NOT list a marketing claim ("100% anonymous", "Cancel anytime", "Free forever") as a goodwill builder if the actual product contradicts it. A false promise is always a drain, not a builder — it creates a worse disappointment than if the claim were never made.
 
 **Builders (increases user trust):**
 - Main user tasks are obvious and frictionless on first visit
@@ -1268,6 +1290,11 @@ Use the appropriate template:
 - **UX Recommendations** — "Suggested experience" must read like a description to a friend, not a design spec: "Instead of showing the studio page without warning, show a quick 'Heads up — this opens MaxStudio' tooltip before the click."
 
 **Target report length: 400–550 lines max for a typical full audit (6–10 findings). Every line must earn its place.**
+
+**Screenshot count explanation — always add this note under the report header:**
+Add one line near the top of the report (after the header metadata block, before the Executive Summary):
+> `Screenshots: Included for P1 findings only. P2/P3 findings include text evidence — visual evidence is reserved for the highest-impact issues.`
+This prevents users from wondering why some findings have images and others don't.
 
 **Required finding fields — every field is mandatory, no exceptions:**
 
