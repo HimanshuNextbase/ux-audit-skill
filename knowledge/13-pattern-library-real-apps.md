@@ -7,12 +7,16 @@ Use this during the PATTERN UPGRADE advisory step. When you identify a gap, name
 
 ## HOW TO USE THIS FILE
 
-During **Step 3.5 — PATTERN UPGRADE**, load this file and:
+This file is **internal agent knowledge** — it informs the quality of your recommendations. It is NOT a reference list to copy into the report.
+
+During **Step 3.5 — PATTERN UPGRADE**:
 1. Match the product under audit to the closest category below
 2. For each gap found, find the named pattern that addresses it
-3. In the recommendation, write: *"[App] solves this with [Pattern] — [one-sentence description of what they do]. Apply this by [specific change]."*
+3. Use the pattern to write a recommendation specific to THIS product's exact problem — do not mention the source app unless it appears briefly in a "Reference:" line at the end
 
-Never say "consider progressive disclosure" — say "Coinbase shows total balance first, then breaks it into crypto vs. cash below — apply this same progressive reveal to your [metric]."
+**The goal:** go from vague ("consider progressive disclosure") to precise ("show the total first, then the breakdown — users currently see 12 line items before they see a summary, which forces mental arithmetic before they understand their position").
+
+The pattern tells you WHAT to suggest. Your job is to explain WHY it applies to this specific product and HOW to implement it here.
 
 ---
 

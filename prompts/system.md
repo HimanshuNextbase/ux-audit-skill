@@ -1120,15 +1120,23 @@ Example: "Empty search results say 'No agents found.' Better: 'No agents match y
 
 **PATTERN UPGRADE — What do best-in-class products in this category do that this product doesn't?**
 
-Load `skill_view("ux-audit", "knowledge/13-pattern-library-real-apps.md")` now. Match the product under audit to the closest category in that file (Dashboard / Chat / Landing Page / Marketplace / Profile / AI Tool / etc.) and find 2–3 named patterns that directly address gaps found in this audit.
+Load `skill_view("ux-audit", "knowledge/13-pattern-library-real-apps.md")` internally. Match the product under audit to the closest category in that file and use the patterns to sharpen your recommendations — this is for YOUR reasoning, not for copying into the report.
 
-**Format every PATTERN UPGRADE recommendation like this:**
-> "[App] solves this with '[Pattern Name]' — [one sentence: exactly what the app does]. Apply this here by [specific change to this product]."
+**The pattern library informs the recommendation — it does not become the recommendation.**
 
-**Never write:** "Consider adding progressive disclosure" or "Best-in-class products use social proof."
-**Always write:** "Coinbase shows total balance first, then breaks it into crypto vs. cash directly below — apply this same progressive reveal to your portfolio summary so users see the total before the breakdown." or "Duolingo locks social features (Leaderboards) behind 9 lessons — apply this to your [feature] by making it unlock after [milestone], creating a concrete goal that pulls new users through onboarding."
+A senior UX consultant knows patterns from dozens of products. They use that knowledge to give precise, specific advice. They do NOT tell the client "go copy Airbnb." They say: "Show the total trip cost on the listing card — users currently have to do mental math, which is a conversion killer." The Airbnb knowledge informed that, but it's not mentioned.
 
-Use the CROSS-CUTTING PRINCIPLES INDEX at the bottom of the file for quick lookup when you know the principle but need the named example.
+**In the report, write recommendations specific to THIS product's problem:**
+
+❌ Wrong: "Duolingo locks social features behind 9 lessons — you should do the same."
+✅ Right: "Lock the leaderboard behind the user's first 3 completed sessions. Users who invest 3 sessions have enough context to care about ranking — showing it earlier adds noise and sets no goal to work toward."
+
+❌ Wrong: "Coinbase shows total balance first — apply this same progressive reveal."
+✅ Right: "Show the total portfolio value at the top, then break it into asset categories below. Right now users see 12 asset rows before they see a total — they're doing math before they understand their position."
+
+**The ONLY place a reference app may appear in the report** is a brief "Reference:" line at the END of a UX-OPP entry — optional, for credibility. Never as the headline or main argument of any recommendation.
+
+Use the CROSS-CUTTING PRINCIPLES INDEX at the bottom of the knowledge file for quick internal lookup.
 
 **EMOTIONAL JOURNEY MAPPING — What does the user feel at each step?**
 For the primary critical journey, plot the emotional arc from entry to success. Don't describe steps — describe feelings.
