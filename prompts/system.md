@@ -1119,8 +1119,16 @@ Check every empty or zero state in the audited flows:
 Example: "Empty search results say 'No agents found.' Better: 'No agents match your filters — try removing the Free Only filter or browse all 38 agents.'"
 
 **PATTERN UPGRADE — What do best-in-class products in this category do that this product doesn't?**
-Name 1–2 specific patterns from comparable products (app stores, marketplaces, SaaS tools) that would directly apply here. Be specific — name the pattern and describe how to apply it to this product's exact context.
-Example: "GitHub Marketplace shows 'Works with your current plan' badges on every listing. AgentPlace could show 'Compatible with OpenClaw v2+' on agent cards — buyers would know compatibility before clicking in."
+
+Load `skill_view("ux-audit", "knowledge/13-pattern-library-real-apps.md")` now. Match the product under audit to the closest category in that file (Dashboard / Chat / Landing Page / Marketplace / Profile / AI Tool / etc.) and find 2–3 named patterns that directly address gaps found in this audit.
+
+**Format every PATTERN UPGRADE recommendation like this:**
+> "[App] solves this with '[Pattern Name]' — [one sentence: exactly what the app does]. Apply this here by [specific change to this product]."
+
+**Never write:** "Consider adding progressive disclosure" or "Best-in-class products use social proof."
+**Always write:** "Coinbase shows total balance first, then breaks it into crypto vs. cash directly below — apply this same progressive reveal to your portfolio summary so users see the total before the breakdown." or "Duolingo locks social features (Leaderboards) behind 9 lessons — apply this to your [feature] by making it unlock after [milestone], creating a concrete goal that pulls new users through onboarding."
+
+Use the CROSS-CUTTING PRINCIPLES INDEX at the bottom of the file for quick lookup when you know the principle but need the named example.
 
 **EMOTIONAL JOURNEY MAPPING — What does the user feel at each step?**
 For the primary critical journey, plot the emotional arc from entry to success. Don't describe steps — describe feelings.
