@@ -38,6 +38,13 @@ For each journey, identify:
 - **Exit point** — what does success look like?
 - **Failure modes** — where do users drop off or get stuck?
 - **Time-to-first-value (TTFV)** — count the clicks from landing to the first moment the user receives meaningful value. Flag if > 5 clicks for cold-start, > 2 clicks for returning.
+  **"Meaningful value" means the user received output from their action** — not a form, not a loading state, not a nav menu. Examples by product type:
+  - AI tool: seeing generated output (not the upload form, not the "processing" spinner)
+  - SaaS dashboard: seeing their actual data loaded (not the empty-state "add your first item")
+  - Marketplace: seeing product results matching their intent (not the search bar)
+  - Landing page: understanding the specific value prop relevant to them (not the hero tagline)
+  - E-commerce: seeing a product page with price + buy option (not category browsing)
+  Clicking "upload" or "search" or "sign up" is NOT first value — it is cost paid toward future value.
 
 **Journey chains:** Real usage is chains, not isolated tasks. Map them explicitly:
 ```
@@ -139,11 +146,9 @@ If the user has already provided all this context, confirm your understanding an
 **SKILL LOADING RULE — load system.md ONCE, nothing else:**
 After loading `prompts/system.md` you have everything you need. Do NOT also load `checklists/site.md`, `templates/full-report.md`, `ux-audit-evidence-capture`, or any other skill files. The checklist is in Step 2 below. The report template is in Step 5 below. Loading extra files wastes 20,000+ tokens of context before the audit even starts.
 
-Before scoring issues, map the product:
+Step 0 already mapped your journeys and confirmed your product understanding. Step 1 is not a re-mapping — it is a quick note of which **pages and UI templates** you will visit in Pass 1. Different from journeys: a journey crosses pages; a template is one page type (e.g. the product card template is one template even if 50 products use it).
 
-- List key pages and flows to cover (use representative sampling — not every page, cover every template)
-- Identify: home, primary task flow, auth flow, empty states, error states, mobile view
-- Note the industry/product type — this determines which industry-specific anti-patterns to watch for (see knowledge/04)
+Note: home, primary task page, auth flow page, empty states, error states, mobile viewport of the primary flow. That is your page hit-list for Pass 1.
 
 **If auditing from a spec or requirements document (before UI exists), run a spec-level check first:**
 - Are there missing screens for key user journeys? (onboarding, search results, processing progress, error recovery)
@@ -229,6 +234,18 @@ The audit server is in **Helsinki, Finland (Hetzner)**. Many government portals,
 5. When the user provides screenshots, proceed using Lane A screenshot mode (what you CAN assess from screenshots: layout, hierarchy, copy, CTAs, forms, navigation, colour, spacing, anti-slop; what you CANNOT: interactive states, performance, component state changes).
 
 **Do NOT** write a "P0 — site unreachable" report for a geo-blocked site. That is not a UX finding — it is a network limitation of the audit environment. Only file a real "availability" finding if you have evidence the site is down for its actual target users (e.g., user confirms it, uptime monitor shows outage).
+
+**EDGE CASE — URL goes down mid-audit:**
+If the URL was reachable at the start but becomes unreachable during the audit (navigation timeout on a page you already visited earlier), do not panic. Save all findings collected so far and note at the top of the report: "Site became unreachable at [step] — findings up to this point are complete. Remaining pages not audited." Deliver a partial report. Do not restart from scratch or attempt the failing URL more than twice.
+
+**EDGE CASE — Settled-check hangs (JS never resolves):**
+If the page-settled check (`document.getAnimations()` + `readyState`) does not return within 8 seconds, abandon it and proceed anyway. Inject a comment in the finding evidence: "Note: page may not have fully settled — animation state unknown at capture time." Do not spin indefinitely waiting for animations that may be infinite (loading spinners, animated backgrounds).
+
+**EDGE CASE — Site blocks browser automation:**
+If the site returns a Cloudflare challenge, bot-detection CAPTCHA, or blank page to the browser tool, switch immediately to screenshot-only mode. Message the user: "This site blocks automated browsers. Please share screenshots of the pages to audit — I'll do a full review from those." Do NOT attempt workarounds (spoofing headers, disabling JS). Do NOT file "bot detection" as a UX finding.
+
+**EDGE CASE — Checkout / payment requires a real credit card:**
+Do not attempt to submit real payment. If the checkout demands a real card and no test card endpoint is available, audit the form fields, copy, error recovery, and trust signals using DOM inspection and screenshots of the form only. Note in the finding: "Live payment flow not tested — form evidence only."
 
 **Case 2 — Frontend or full-stack code was provided (no URL):**
 Run it locally. A locally running app is ALWAYS screenshottable regardless of whether the deployed version is private or behind auth. Dev mode usually bypasses auth or shows the full UI shell.
@@ -331,6 +348,8 @@ After `browser_navigate` to the target URL, before scrolling or clicking anythin
 ```
 
 Record values in the CWV table. If `lcp_ms` is null, note "LCP not captured — run Lighthouse for accurate measurement." Do not leave LCP blank.
+
+**INP special rule:** INP requires a real user interaction (click, keypress, tap) to fire an event. In a browser-automation audit with no real interactions, INP will always be null — this is expected and acceptable. Write: `INP: Not measurable — requires real user interaction; no synthetic event fires in browser automation. Run Lighthouse or use Chrome DevTools > Performance for a lab approximation.` Do NOT write simply "Not measured" — that phrasing is forbidden elsewhere; use the exact wording above.
 
 **Screenshot evidence — MANDATORY for every P0/P1 finding when a URL is available:**
 
@@ -838,6 +857,12 @@ Score each mapped journey on 4 independent axes. These are not interchangeable �
 
 **Operating cost accounting:** Count user-meaningful actions (clicks, submits, navigations, modal dismissals). Subtract intentional friction (irreversibility confirmations, security guards). Subtract core required steps. Any remainder > 0 = fail.
 
+**Taxonomy rule — FLOW vs. TRUST for modal/popup issues:**
+A modal that *interrupts* the flow is a **FLOW** finding (operating_cost fails). A modal whose *content* contradicts the product brand or contains a different product name is a **separate TRUST** finding. These are two distinct issues — file them separately.
+Example: VirtualGF shows a "Download BiBi Chat!" modal on a site called VirtualGF. File TWO findings:
+- FLOW-001: Modal interrupts web chat path before first value (Cooper friction)
+- TRUST-001: Modal uses a different product name — users see "VirtualGF" everywhere then get "BiBi Chat" popup, which reads as a scam
+
 **"What if" failure scenario testing** — run at least 3 off-happy-path tests per critical journey:
 - Wrong/invalid input at each required field — does the error recover gracefully and inline?
 - Back button at the worst point (mid-form, mid-checkout, mid-onboarding) — is state lost?
@@ -1265,7 +1290,17 @@ Use this 5-factor rubric. Score each factor 0–4. Max total = 20.
 - **P2** (8–12) → planned backlog
 - **P3** (1–7) → opportunistic
 
-**P0 override rule:** Force P0 regardless of score when an issue blocks: sign-in, payment/billing, legal consent, or keyboard-only completion on a critical journey.
+**P0 override rule:** Force P0 regardless of score when an issue **completely prevents** sign-in, payment/billing, or legal consent on a critical journey.
+
+**"Blocks" means the user cannot complete the step at all and cannot self-recover.** Examples:
+- ✅ P0: Signup submit returns 500 with no error message and no retry — account cannot be created
+- ✅ P0: Payment form crashes the page on submit — purchase impossible
+- ✅ P0: Cookie consent modal has no dismiss/accept — user is locked out of the page
+- ❌ NOT P0 (P1): App-download modal appears before web chat — user can dismiss it and continue
+- ❌ NOT P0 (P1): Signup has no age/consent checkbox — user can still create account, it's a compliance gap
+- ❌ NOT P0 (P1): Login page has no "show password" toggle — user can still log in
+
+Note: keyboard-only completion is removed from the P0 override — accessibility auditing is out of scope for this skill. Do not flag keyboard navigation issues as P0.
 
 ---
 
