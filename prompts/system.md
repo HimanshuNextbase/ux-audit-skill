@@ -674,7 +674,24 @@ For every P0 and P1 finding:
    })();
    ```
 5. Take a **viewport-only** screenshot (NOT full page). Use the `clip` coordinates from the JS output if the screenshot tool supports a clip/region parameter. If not, take a regular viewport screenshot — the element will be centered by `scrollIntoView`. Never capture the full page; viewport captures are enough and stay under 500KB.
-6. Save to `~/audits/screenshots/[slug]-[FINDING_ID].png`
+
+   ❌ DO NOT use `browser_vision` to capture finding screenshots. `browser_vision` always returns the full-page cached image (5000px+ tall) — it is for analysis only, not for saving as evidence.
+   ✅ Use `browser_screenshot` (viewport-only) after the inject JS above.
+
+6. After `browser_screenshot`, crop the saved image to focus on just the annotated element + context. Use this Python snippet:
+   ```bash
+   python3 -c "
+   from PIL import Image
+   img = Image.open('/home/brew/.hermes/cache/screenshots/browser_screenshot_HASH.png')
+   # Use clip coords from step 4: x, y, width, height
+   cropped = img.crop((CLIP_X, CLIP_Y, CLIP_X + CLIP_W, CLIP_Y + CLIP_H))
+   cropped.save('/home/brew/audits/screenshots/[slug]-[FINDING_ID].png')
+   print('Cropped:', cropped.size)
+   "
+   ```
+   If PIL/crop is not available, copy the viewport screenshot directly — a 577px-tall viewport shot is acceptable. A 5000px full-page dump is not.
+
+7. Save to `~/audits/screenshots/[slug]-[FINDING_ID].png`
 7. Reference the saved path in the finding's Screenshot field using embedded markdown image syntax so it appears inline in the PDF:
    `![FINDING_ID](/home/brew/audits/screenshots/[slug]-[FINDING_ID].png)`
    Use the full absolute path (starting with `/home/brew/`) — NOT `~/` tilde paths, which md-to-pdf cannot resolve.
