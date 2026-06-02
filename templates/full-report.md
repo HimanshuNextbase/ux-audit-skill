@@ -97,12 +97,12 @@ Score each audited journey on 4 axes. A single fail on any axis fails the journe
 
 **Core Web Vitals (lab)**
 
-| Metric | Value | Status |
-|--------|-------|--------|
-| LCP | [value] | ✅ ≤ 2.5s / ⚠️ / ❌ |
-| INP | [value] | ✅ ≤ 200ms / ⚠️ / ❌ |
-| CLS | [value] | ✅ ≤ 0.1 / ⚠️ / ❌ |
-| TTFB | [value] | ✅ ≤ 800ms / ⚠️ / ❌ |
+| Metric | Desktop 1440px | Mobile 390px | Status |
+|--------|---------------|-------------|--------|
+| LCP | [value] | [value] | ✅ ≤ 2.5s / ⚠️ / ❌ |
+| INP | — not measurable in automation | — | see note |
+| CLS | [value] | [value] | ✅ ≤ 0.1 / ⚠️ / ❌ |
+| TTFB | [value] | [value] | ✅ ≤ 800ms / ⚠️ / ❌ |
 
 ---
 

@@ -446,25 +446,61 @@ Skip browser checks. Note "Rendered view unavailable — backend-only code" at t
 - Example of what to do: `{nav: [...document.querySelectorAll('nav a')].map(a=>a.textContent.trim()), h1: document.querySelector('h1')?.textContent, cta: [...document.querySelectorAll('button')].map(b=>b.textContent.trim()).slice(0,10)}`
 - If you need page structure, use `browser_snapshot` (it's already compressed) instead of extracting raw text
 
-**PASS 1 — Discovery (no screenshots):**
-Browse the entire product in a single linear sweep. Navigate each critical journey from start to end. While browsing:
+**PASS 1 — Desktop discovery (no screenshots):**
+Set viewport to **1440×900** (desktop). Browse the entire product in a single linear sweep. Navigate each critical journey from start to end. While browsing:
 - Note every issue you observe: what it is, which URL/page it's on, its CSS selector or evidence, estimated priority
 - Store as a draft finding list — do NOT take any screenshots yet
 - Do NOT re-navigate to a page you already visited
 - This pass should cost ~15–20 tool calls total regardless of how many findings you find
-- When clicking interactive elements (toggles, tabs, accordions), run the settled-check before reading DOM state — intermediate animation states are not real UI states
+- When clicking interactive elements (toggles, tabs, accordions), run the settled-check before reading DOM state
 
-After Pass 1: score and assign final priorities to all findings (P0/P1/P2/P3).
+**PASS 1B — Mobile discovery (no screenshots, ~5–8 additional tool calls):**
+After completing desktop discovery, resize the viewport to **390×844** (iPhone 14) and repeat a focused sweep of the primary journey only — not every page, just the critical path:
 
-**PASS 2 — Evidence (P0/P1 only, grouped by URL):**
-Take screenshots ONLY for P0 and P1 findings. P2/P3 get no screenshots — note "Screenshot: N/A — P2/P3".
+```js
+// Resize to mobile viewport
+(async () => {
+  await new Promise(r => setTimeout(r, 500));
+  console.log(JSON.stringify({
+    viewport: 'set to 390px',
+    innerWidth: window.innerWidth,
+    hasScrollX: document.body.scrollWidth > window.innerWidth,
+    overflowingElements: [...document.querySelectorAll('*')]
+      .filter(el => el.getBoundingClientRect().right > window.innerWidth)
+      .slice(0,5).map(el => el.tagName + (el.className ? '.'+el.className.split(' ')[0] : ''))
+  }));
+})();
+```
+
+During the mobile pass, specifically look for:
+- **Horizontal scroll** — any element wider than 390px (overflow causing side-scroll)
+- **Navigation collapse** — does the desktop nav become a hamburger? Does the hamburger work?
+- **Touch targets** — buttons and links visually smaller than ~44px height
+- **Text overflow** — long words or headings that overflow their containers
+- **Stacked layout breaks** — elements that were side-by-side on desktop but overlap or misalign on mobile
+- **Font sizes** — text that looks fine on desktop but too small to read at 390px
+- **Forms** — inputs that extend beyond the screen width, labels that wrap awkwardly
+- **Fixed elements** — sticky headers or banners that eat too much vertical space on mobile
+- **Image scaling** — images that break their containers or become too small to read
+- **Modal/sheet sizing** — modals that don't fit the screen or have unscrollable content
+
+Add mobile-specific findings to the draft list with tag `[Mobile only]`.
+
+After both passes: score and assign final priorities to all findings (P0/P1/P2/P3).
+
+**PASS 2 — Evidence (P0/P1 only, grouped by URL, both viewports):**
+Take screenshots for P0 and P1 findings. For each finding:
+- If it affects **both viewports** — take both a desktop (1440px) and mobile (390px) screenshot
+- If it is **desktop only** — one desktop screenshot
+- If it is **mobile only** (`[Mobile only]` tag) — one mobile screenshot at 390px
+- P2/P3 get no screenshots — note "Screenshot: N/A — P2/P3"
 
 Before making any browser call in Pass 2:
 1. Group all P0/P1 findings by their page URL
-2. For each unique URL, navigate ONCE and handle ALL findings on that page in one visit:
-   - Inject all annotators for all findings on that page in a single JS call (or sequential JS calls before any screenshot)
-   - Take one viewport screenshot per annotated element — do NOT navigate away and back for each finding
-3. This means: 3 findings on the same page = 1 navigate + 3 inject + 3 screenshot calls (not 3×navigate + 3×inject + 3×screenshot)
+2. For each unique URL, navigate ONCE at desktop width. Handle ALL desktop findings. Then resize to 390px and handle ALL mobile findings on the same page — in one visit.
+3. This means: 2 desktop + 1 mobile finding on the same page = 1 navigate + 3 inject + 3 screenshot calls (not 3 separate page loads)
+
+Report viewport in each finding's Evidence field: `Evidence: [Desktop 1440px] selector` or `Evidence: [Mobile 390px] selector`.
 
 If a finding is on a page that was already visited in Pass 1 for another finding — handle both in a single navigation. Never revisit a URL more than once in Pass 2.
 
@@ -515,6 +551,23 @@ After `browser_navigate` to the target URL, before scrolling or clicking anythin
 ```
 
 Record values in the CWV table. If `lcp_ms` is null, note "LCP not captured — run Lighthouse for accurate measurement." Do not leave LCP blank.
+
+**Run CWV twice — desktop then mobile.** LCP, TTFB, and layout shift often differ significantly between viewports. After recording desktop CWV, resize to 390px and re-navigate the same URL to capture mobile CWV:
+
+```js
+// After resizing to 390px, navigate fresh and run the same observer
+// Mobile LCP often worse than desktop — hero image may not be lazy-loaded
+// but responsive images may serve a larger file on mobile
+```
+
+Report both in the CWV table:
+
+| Source | Viewport | TTFB | LCP | CLS | INP | Notes |
+|--------|----------|------|-----|-----|-----|-------|
+| PerformanceObserver | Desktop 1440px | Xms | Xms | X | — | LCP element: IMG |
+| PerformanceObserver | Mobile 390px | Xms | Xms | X | — | LCP element: IMG |
+
+If mobile LCP is >30% worse than desktop, flag it as a PERF finding — mobile users on slower networks are doubly penalised.
 
 **INP special rule:** INP requires a real user interaction (click, keypress, tap) to fire an event. In a browser-automation audit with no real interactions, INP will always be null — this is expected and acceptable. Write: `INP: Not measurable — requires real user interaction; no synthetic event fires in browser automation. Run Lighthouse or use Chrome DevTools > Performance for a lab approximation.` Do NOT write simply "Not measured" — that phrasing is forbidden elsewhere; use the exact wording above.
 
