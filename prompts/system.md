@@ -65,9 +65,9 @@ Minimum journeys to map (adjust for product type):
 
 ### 0.3 — Audit Scope & Input Protocol
 
-- **What is the audit trying to answer?** — Full review / Accessibility compliance / Performance / Conversion / Specific flow / Single page
+- **What is the audit trying to answer?** — Full review / Performance / Conversion / Specific flow / Single page
 - **Are there known problem areas?** — User complaints, support tickets, analytics drop-off points, stakeholder concerns
-- **What are the business stakes?** — Conversion, compliance deadline, accessibility lawsuit risk, launch readiness
+- **What are the business stakes?** — Conversion, compliance deadline, launch readiness
 
 **Data check — ask NOW, before starting:**
 If the user has any of this data, ask for it upfront. It changes which findings are P0 vs. P2:
@@ -316,7 +316,7 @@ Journey context mode: [cold-start / returning / power-user]
 Critical journeys to audit:
   1. [Journey name] — [entry point → goal → success condition] — TTFV target: [≤5 / ≤2 clicks]
   2. [Journey name] — ...
-Scope: [full audit / single page / specific flow / accessibility-only / quick scan]
+Scope: [full audit / single page / specific flow / quick scan]
 Input: [URL / screenshots / frontend code / backend code / spec / combination]
 Known issues: [if any]
 Checklist: [site.md / app.md]
@@ -1083,60 +1083,6 @@ LCP > 4s = P1 regardless of product type. TTI > 10s (e.g. 18s) = P1 for any cons
   - Does signup have explicit 18+ confirmation checkbox adjacent to Create Account?
   - File both as separate findings if absent — the landing page gate and the signup gate are independent requirements.
 
-#### ACCESSIBILITY (Baseline — not full WCAG, but the failures that block real users)
-
-Run this JS snippet to catch the most common a11y blockers automatically:
-
-```js
-(async () => {
-  const issues = [];
-  // 1. Images without alt text
-  document.querySelectorAll('img:not([alt])').forEach(img =>
-    issues.push({type:'img-no-alt', src: img.src.slice(-40)}));
-  // 2. Buttons with no accessible name
-  document.querySelectorAll('button, [role="button"]').forEach(btn => {
-    const name = btn.textContent?.trim() || btn.getAttribute('aria-label') || btn.getAttribute('title') || '';
-    if (!name) issues.push({type:'button-no-name', html: btn.outerHTML.slice(0,80)});
-  });
-  // 3. Inputs without labels
-  document.querySelectorAll('input, select, textarea').forEach(input => {
-    const id = input.id;
-    const hasLabel = id && document.querySelector(`label[for="${id}"]`);
-    const hasAria = input.getAttribute('aria-label') || input.getAttribute('aria-labelledby');
-    if (!hasLabel && !hasAria) issues.push({type:'input-no-label', name: input.name || input.type});
-  });
-  // 4. Heading hierarchy skips
-  const headings = [...document.querySelectorAll('h1,h2,h3,h4,h5,h6')].map(h => parseInt(h.tagName[1]));
-  for (let i=1;i<headings.length;i++) {
-    if (headings[i] - headings[i-1] > 1)
-      issues.push({type:'heading-skip', from:'h'+headings[i-1], to:'h'+headings[i]});
-  }
-  // 5. Very low contrast text (approximate — checks computed vs background)
-  const darkOnDark = [...document.querySelectorAll('p,span,a,button,label,h1,h2,h3')]
-    .filter(el => {
-      const s = window.getComputedStyle(el);
-      const fg = s.color; const bg = s.backgroundColor;
-      // Very rough: flag if both are dark or both are light
-      const isDark = c => c.includes('0, 0, 0') || parseInt(c.split(',')[0].replace(/\D/g,'')) < 80;
-      const isLight = c => parseInt(c.split(',')[0].replace(/\D/g,'')) > 200;
-      return (isDark(fg) && isDark(bg)) || (isLight(fg) && isLight(bg));
-    }).slice(0,3).map(el => el.tagName+': '+el.textContent?.slice(0,30));
-  if (darkOnDark.length) issues.push({type:'contrast-suspect', elements: darkOnDark});
-
-  console.log(JSON.stringify({a11y_issues: issues, count: issues.length}));
-})();
-```
-
-Flag any result with `count > 0` as an accessibility finding. Minimum checks for every audit:
-- **Images without alt text** → P1 (screen readers read filename instead)
-- **Buttons with no accessible name** → P1 (screen reader announces "button" with no context)
-- **Inputs without labels** → P1 (blind users can't fill the form)
-- **Heading hierarchy skips** (h1→h3, skipping h2) → P2 (disrupts screen reader navigation)
-- **Suspect contrast** → P2 flag, note "Verify manually — low-vision users may not be able to read this"
-
-Also check: `document.querySelector(':focus-visible')` is not `outline: none` — keyboard users need visible focus rings.
-
-Note in report: "This audit covers baseline a11y blockers detectable via DOM inspection. A full WCAG 2.1 AA audit requires screen reader testing and colour contrast measurement with a dedicated tool (WebAIM, axe DevTools)."
 
 #### PWA (if applicable)
 - Installable (manifest + service worker)
@@ -1734,7 +1680,7 @@ Use this 5-factor rubric. Score each factor 0–4. Max total = 20.
 - ❌ NOT P0 (P1): Signup has no age/consent checkbox — user can still create account, it's a compliance gap
 - ❌ NOT P0 (P1): Login page has no "show password" toggle — user can still log in
 
-Note: keyboard-only completion is removed from the P0 override — accessibility auditing is out of scope for this skill. Do not flag keyboard navigation issues as P0.
+Note: accessibility auditing (keyboard-only navigation, screen readers, ARIA, contrast compliance) is out of scope for this skill. Do not flag these as findings.
 
 ---
 
@@ -1884,7 +1830,7 @@ If the user confirms, use `skill_manager` to patch the relevant file (`checklist
 | CONTENT | High | Language clarity, CTA text, empty states, copy tone |
 | FORM | Very High | Labels, validation, field types, error recovery |
 | AUTH | Very High | Login, registration, session, password, social sign-in |
-| A11Y | — | **Not audited** — scope excludes screen reader, keyboard, and ARIA findings |
+| A11Y | — | **Out of scope** — accessibility auditing (screen readers, keyboard-only, ARIA, WCAG) is not part of this audit |
 | UX-OPP | Medium–High | UX opportunities — flow simplification, conversion moments, discoverability, hierarchy, pattern upgrades. Not bugs — proactive improvements. |
 | IDEA | Medium–High | New feature ideas grounded in observed user needs. Additive, not fixes. |
 | VISUAL | High | Hierarchy, typography, colour, 8-state components, animation |

@@ -169,38 +169,7 @@ Every interactive element must have all 8 states:
 
 ---
 
-## 10. Accessibility (Mobile)
-
-### Contrast & Colour
-- [ ] Text contrast minimum 4.5:1; UI elements 3:1
-- [ ] App usable with system large-text enabled
-- [ ] App usable with system colour-invert / high-contrast modes
-- [ ] Colour is never the sole indicator of meaning
-
-### Touch & Motor
-- [ ] All touch targets minimum 44×44px
-- [ ] Spacing between adjacent targets minimum 8px
-- [ ] No time-limited interactions that can't be extended
-- [ ] No motion-triggered actions without an accessible alternative
-
-### Semantics (iOS VoiceOver / Android TalkBack)
-- [ ] All interactive elements have accessible names (labels, content descriptions)
-- [ ] Icons and image buttons have descriptive labels
-- [ ] Custom controls have correct accessibility roles
-- [ ] Decorative images do not clutter the visual layout or compete with primary content
-- [ ] Reading order matches visual order
-- [ ] Dynamic content changes announced via accessibility live regions
-- [ ] Modal/sheet focus is trapped while open; dismissed on back gesture or close button
-
-### Zoom & Reflow
-- [ ] Zooming is allowed (meta viewport must not disable user-scalable)
-- [ ] Text scales correctly when OS large-text setting is active
-- [ ] No content clipped or hidden when text size increases
-- [ ] Content usable at 320px CSS width (landscape narrow / zoomed in)
-
----
-
-## 11. Orientation & Responsive
+## 10. Orientation & Responsive
 
 - [ ] App responds correctly to both portrait and landscape orientation
 - [ ] Important elements reachable in both orientations
