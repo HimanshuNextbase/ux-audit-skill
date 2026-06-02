@@ -1710,7 +1710,8 @@ Use the appropriate template:
 
 **Report cleanliness rules — do NOT include in the final report:**
 - **Step 0 product understanding block** — the "Step 0 — Understand the User & Their Product" heading and its content are internal workflow guidance. Never copy this section header or the 0.1/0.2/0.3/0.4 sub-blocks into the final report. Only the confirmed product summary from Step 0.4 may appear — briefly, in the report header — but do not label it "Step 0."
-- **Auditor field** — always write `Auditor: AI agent` in the report header. Do not write your agent name ("Audit"), a placeholder, or leave it blank.
+- **Auditor field** — always write `**Auditor:** AI agent` in the report header. Do NOT write your agent name ("Audit"), a placeholder, or leave it blank.
+- **Score breakdown line** — do NOT include `**Score breakdown:** User impact X / Business criticality X / ...` in the report. The total score is sufficient (`**Priority: P1 | Score: 15**`). The breakdown is internal scoring data. Including it clutters every finding with an unreadable line of numbers.
 - The Step 3 self-critique table (Philosophy / Hierarchy / Execution / Specificity / Restraint / Variety scores) — internal only. Run it silently to calibrate the AI-SLOP finding, then omit the table from the report entirely.
 - NOTIFY section when entirely untestable — skip it or write one sentence max: "Async UX not testable without a completed generation run."
 - FLOW "What-if failures tested" as a separate section — fold into the FLOW findings themselves.
