@@ -59,7 +59,7 @@ Minimum journeys to map (adjust for product type):
 |-------------|-----------------|
 | Marketing / landing page | 2–3 (discover → understand → convert) |
 | CRUD tool | 4 (create / read / update / delete) |
-| Mobile app | 5 (install → onboard → core task → return visit → account) |
+| Mobile app | 5 (cold-start → onboard → core task → return visit → account/settings) |
 | SaaS app | 6–10 (sign-up → onboard → core task → share → settings → billing) |
 | PWA | 5+ (install → core task → offline → update → re-engage) |
 
@@ -97,6 +97,16 @@ Do not discover auth gates mid-audit. If credentials are not provided, mark gate
 - Run Lane B in full: semantic HTML structure, 8-state component coverage, performance code patterns, anti-slop code checks.
 - You cannot assess visual rendering or copy quality without a screenshot or URL.
 - When both code and URL/screenshot are provided, Lane A + Lane B findings are combined. Conflicts: code is authoritative for semantics and component logic; visual observation is authoritative for hierarchy and copy.
+
+**Mobile app frontend code (React Native / Expo / Flutter / Swift / Kotlin)**
+- First, identify the framework from the codebase: check for `react-native`, `expo`, `pubspec.yaml` (Flutter), `*.swift` / `*.kt` files.
+- **React Native / Expo:** Run Lane B (mobile) AND attempt Lane A:
+  - Check if `expo start --web` or `npx react-native start` produces a web output. If `app.json` has `"web"` in `expo.platforms`, run `npx expo export:web` and serve it.
+  - If a web bundle is produced, navigate it at 390px viewport for Lane A.
+  - If no web output is possible, immediately message the user: "This is a native-only React Native app. Please share screenshots of the key screens (home, onboarding, core task, empty state, error state) and I'll audit from those."
+- **Flutter:** Same — check for `flutter run -d web`. If web target exists, use it for Lane A. Otherwise ask for screenshots.
+- **Native Swift / Kotlin:** No browser can render native code. Skip Lane A entirely. Message the user: "This is native iOS/Android code. No browser-renderable output exists on this server. Please share screenshots — I'll do a full Lane B code audit plus a screenshot-based Lane A for anything you provide."
+- **Lane B for mobile code** is different from web Lane B — see the Mobile App Code section in Step 2 below. Do NOT apply HTML/CSS checks to Swift or Kotlin. Apply the mobile-specific checks instead.
 
 **Backend code**
 - Check UX-relevant backend patterns only (not architecture or security beyond UX impact):
@@ -549,10 +559,16 @@ delegate_task(
 Load this skill file:
   skill_view("ux-audit", "prompts/system.md")   # read Lane B section
 
-Work through every Lane B check in system.md Step 2:
-  Semantic HTML structure, 8-state component coverage,
-  performance code patterns (lazy-load on LCP, tabular-nums, 100vw, etc.),
-  anti-slop code checks (transition-all, z-index:9999, bounce easing, etc.).
+**First: detect the frontend type from the code.**
+- Check for `package.json` → look for `"react-native"`, `"expo"`, `"@react-navigation"` → mobile React Native
+- Check for `pubspec.yaml` → Flutter
+- Check for `*.swift` files → native iOS
+- Check for `*.kt` files → native Android
+- Check for `*.html`, React/Vue/Svelte with DOM output → web frontend
+
+Then work through the correct Lane B section in system.md Step 2:
+- **Web frontend** → HTML Semantics, 8-state component coverage, performance code patterns, anti-slop code checks
+- **Mobile app code (React Native / Expo / Flutter / Swift / Kotlin)** → Mobile App Code section (touch targets, navigation, keyboard, state coverage, platform patterns, user flow mapping)
 
 **Lighthouse audit — MANDATORY when a local dev server is running. Run this before writing any findings:**
 
@@ -869,7 +885,20 @@ Example: VirtualGF shows a "Download BiBi Chat!" modal on a site called VirtualG
 - Slow/broken network mid-action — does the UI communicate what happened and offer retry?
 - Mobile → desktop handoff — is in-progress state (draft, cart, onboarding step) preserved across sessions?
 
+**Mobile app additional "what if" tests** — run these for every mobile app audit:
+- **App backgrounded mid-task** — user switches away and returns. Does the app restore the exact screen and state, or reset to home?
+- **Permission denied** — user denies camera/location/notification permission. Does the app explain why it's needed and offer a path to grant it later, or silently fail?
+- **Push notification tapped** — does the app open to the relevant screen (e.g. tapping a comment notification opens that comment), or always home?
+- **Session expired while in background** — user's token expires while the app is backgrounded. On return, does the app redirect cleanly to login with state preserved, or show a broken screen?
+- **No network on launch** — app launched with no internet. Does it show a meaningful offline state or crash/show raw error?
+- **Deep link clicked** — user taps a link that should open a specific screen. Does it route correctly, or open home?
+
 **"3 Days Later" check** — does the product show "continue where you left off", recent items, or draft-saved signals for a returning user? If the user left mid-task, can they pick up without starting over? Absence is a P2 retention issue for any CRUD or multi-step flow.
+
+**Mobile "3 Days Later" additions:**
+- Does the app restore scroll position in lists/feeds between sessions?
+- Is the user returned to their last active tab, or always the first tab?
+- Are unsent messages, draft posts, or incomplete forms recovered after the app closes?
 
 #### EXCISE — Friction Accounting (Cooper's Catalog)
 
@@ -1028,6 +1057,111 @@ Every interactive component must handle all 8 visible states:
 - No bounce/spring easing on UI controls
 - No auto-rotating carousel without pause control (distracting and inaccessible to users with cognitive differences)
 - Audio/video uses `autoplay muted loop playsinline`
+
+---
+
+### Lane B (Mobile): Mobile App Code (React Native / Expo / Flutter / Swift / Kotlin)
+
+Apply this section INSTEAD OF the web Lane B when the code is a mobile app. These checks work across all mobile frameworks — map concepts to the framework's equivalent (e.g. `TouchableOpacity` = button, `FlatList` = virtualised list, `UIButton` = button).
+
+#### USER FLOW MAPPING — do this first before any code checks
+
+Read the screen files and navigation config to reconstruct the app's complete user journey map:
+
+1. **Identify all screens** — list every screen file (`.tsx`, `.swift`, `.kt`, `.dart`)
+2. **Map the navigation graph** — read the router/navigator config:
+   - React Native: `App.tsx`, `navigation/`, React Navigation `Stack.Navigator`, `Tab.Navigator`
+   - Flutter: `GoRouter`, `MaterialApp routes`, `Navigator.push`
+   - Swift: `UINavigationController`, `TabBarController`, SwiftUI `NavigationStack`
+   - Kotlin: Android Jetpack Navigation graph XML, `NavController`
+3. **Trace the 5 critical mobile journeys from the code:**
+
+| Journey | Entry point to find in code | Success condition |
+|---------|---------------------------|-------------------|
+| Cold-start / first launch | `SplashScreen`, `onboarding/`, `AppDelegate`, `MainApplication` | User reaches the first interactive screen in ≤3 taps |
+| Onboarding | `Onboarding*`, `Welcome*`, `Intro*` screens | User completes setup and reaches home — every step has back + skip option |
+| Core task | Primary feature screen — the reason users download the app | User achieves the task's success state with ≤5 taps from home |
+| Return visit | State restoration, `AsyncStorage`/`SharedPreferences` reads at app launch | App re-opens to correct context, not always to the home screen |
+| Account / settings | Profile, settings, sign-out, delete account flows | All account actions are self-serve and reversible where applicable |
+
+4. **For each journey, flag:**
+   - **Missing back navigation** — any screen that can be reached but has no back/close affordance in code
+   - **Dead ends** — screens with no onward navigation in the router config (missing route, commented-out link)
+   - **Broken return** — app always relaunches to the root/home instead of restoring the user's last position
+   - **Missing empty states** — list/feed screens with no code path for zero items
+   - **Missing error states** — async screens (`useEffect`/`viewDidLoad` with network calls) with no error branch rendered
+   - **Missing loading states** — async screens that render data directly without a loading skeleton or spinner
+
+Output the journey map as a table at the top of findings before any individual issues.
+
+#### TOUCH & INTERACTION
+
+- **Touch target size** — every tappable element must be ≥ 44×44pt/dp. Check:
+  - React Native: `style={{ width, height }}` on `TouchableOpacity`, `Pressable`, `Button` — flag anything < 44
+  - Flutter: `SizedBox` wrapping `GestureDetector` or `InkWell` — flag < 44
+  - Swift: `frame` or Auto Layout constraints on `UIButton`, `UIControl` — flag < 44×44
+  - Kotlin: `layout_width`/`layout_height` on `Button`, `ImageButton`, `View` with click listener — flag < 44dp
+- **Tap spacing** — adjacent tap targets need ≥ 8px gap. Flag icon rows and tab bars where icons are ≤ 8px apart
+- **Thumb zone** — primary CTA must be in the lower 60% of the screen. Flag primary actions placed above the midpoint on tall screens
+- **Haptic feedback** — destructive actions, toggles, and confirmations should trigger haptics. Flag absence of `UIFeedbackGenerator` (Swift), `HapticFeedback` (Flutter), `Vibrator`/`VibrationEffect` (Android), `Haptics` (Expo)
+- **Active/pressed state** — every tappable element must show immediate visual feedback. Flag `TouchableOpacity` with no `activeOpacity`, `Pressable` with no `pressed` style change, `UIButton` with no `highlighted` state, Android `View` with no ripple/selector
+
+#### NAVIGATION PATTERNS
+
+- **Platform convention** — iOS apps use tab bar at bottom + stack navigation. Android apps use bottom nav or nav drawer. Flag any app that uses a hamburger menu as the primary nav on iOS, or a tab bar that doesn't follow Material 3 on Android
+- **Back navigation** — every pushed/presented screen must have a back/close control in code. Flag screens where `navigation.goBack()` / `dismiss()` / `popViewController` is absent
+- **Deep link handling** — check for `Linking` (React Native), `Intent` filters (Android), Universal Links (iOS). Flag if no deep link config exists — users tapping push notifications land on home instead of the relevant screen
+- **Tab bar state** — tab bar items should be specific ("My Orders" not "Home"). Flag generic labels in the navigator config
+- **Modal vs push** — modals should be used for temporary tasks (confirm, pick, create), not for primary navigation. Flag if modal screens are used as the primary flow progression
+- **Gesture conflicts** — React Native: flag `ScrollView` or `FlatList` inside a swipe gesture handler without `simultaneousHandlers`. iOS: flag custom swipe gestures that conflict with the system back gesture (`interactivePopGestureRecognizer`)
+
+#### KEYBOARD & FORMS
+
+- **KeyboardAvoidingView** — any screen with a text input must use `KeyboardAvoidingView` (React Native) or `ScrollView` with `keyboardShouldPersistTaps`. Flag screens where a `TextInput` is NOT inside one. Swift equivalent: `NotificationCenter` observer for `UIResponder.keyboardWillShowNotification` adjusting bottom constraint
+- **Keyboard type** — flag `TextInput`/`UITextField`/`EditText` fields where `keyboardType`/`textContentType`/`inputType` doesn't match the expected input:
+  - Email → `keyboardType="email-address"` / `textContentType="emailAddress"` / `inputType="textEmailAddress"`
+  - Phone → `keyboardType="phone-pad"` / `textContentType="telephoneNumber"` / `inputType="phone"`
+  - Password → `secureTextEntry` / `isSecureTextEntry` / `inputType="textPassword"` + toggle to reveal
+  - Numeric → `keyboardType="numeric"` / `inputType="number"`
+- **Autocorrect/autocapitalize** — disable for email, username, and code fields. Flag missing `autoCorrect={false}` / `autocorrectionType="no"` / `inputType` without `textNoSuggestions`
+- **Return key action** — the keyboard's return/go/done key should match the field's purpose. Flag `TextInput` without `returnKeyType` (React Native) or `UITextInputTraits.returnKeyType` (iOS)
+- **Field validation** — flag forms where validation only fires on submit. Should fire on blur for each field
+
+#### PERFORMANCE CODE PATTERNS
+
+- **FlatList vs ScrollView for long lists** — `ScrollView` renders all children at once. Flag any `ScrollView` containing a `.map()` that renders > 10 items. Use `FlatList` or `SectionList` instead
+- **Memo / useCallback on list items** — `FlatList` `renderItem` that creates a new function every render causes every item to re-render. Flag `renderItem={() => <Item />}` without `useCallback`
+- **Image optimisation** — flag `<Image>` without explicit `width`/`height` (causes layout shift), without `resizeMode`, or loading from a non-CDN URL at full resolution
+- **Animated API** — flag `Animated.Value` updates inside `setState` (defeats native driver). Flag `useNativeDriver: false` on opacity or transform animations — use `true` for 60fps
+- **Unnecessary re-renders** — flag `useEffect` with no dependency array (runs every render), or context providers wrapping large trees where value changes frequently
+- **Bundle size** — flag `import * as` from large libraries when only one function is used. Flag `moment.js` — use `date-fns` or `dayjs`. Flag `lodash` full import — use individual imports
+
+#### STATE & ASYNC PATTERNS
+
+- **Loading states** — every component that fetches data must render a skeleton or spinner while `isLoading`. Flag async components with no loading branch
+- **Error states** — every async component must render an error message + retry action when the request fails. Flag components with no `isError` / `catch` branch visible to the user
+- **Empty states** — every list/feed must render a helpful empty state when data is an empty array. Flag lists that render nothing with zero items
+- **Optimistic updates** — quick actions (like, bookmark, toggle) should update the UI immediately and revert on failure. Flag actions that disable the UI and wait for the server before updating
+- **AsyncStorage race conditions** — flag `AsyncStorage.getItem` without `await` inside `useEffect`, which can cause reads to complete after the component unmounts
+- **Session expiry handling** — flag apps where a 401 from any API call silently fails or shows a raw error. There must be a global interceptor (Axios interceptor, `onQueryStarted` in RTK Query, URLSession delegate) that redirects to the login screen
+
+#### PLATFORM-SPECIFIC PATTERNS
+
+- **SafeAreaView** — every root screen must use `SafeAreaView` (React Native) or `safeAreaInsets` (Flutter) or `safeAreaLayoutGuide` (iOS) to avoid content under notch/status bar/home indicator. Flag screens missing this
+- **Platform.OS checks** — flag platform-specific UI differences that should be using `Platform.OS === 'ios' ? ... : ...` but use a single hard-coded style for both platforms (e.g. fixed padding for the status bar instead of `StatusBar.currentHeight`)
+- **Permission flows** — location, camera, microphone, notifications must request permission only when the user initiates the relevant feature — never on app launch. Flag `requestPermissions` calls in `componentDidMount` / `useEffect` on the root screen
+- **Push notification tap** — flag apps that handle `messaging().onNotificationOpenedApp` / `UserNotifications.UNUserNotificationCenterDelegate` — verify the handler navigates to the relevant screen, not always to home
+- **Offline / no network** — flag screens that make network calls with no offline handling. There must be a `NetInfo`/`NWPathMonitor`/`ConnectivityManager` check and a user-visible "no connection" state
+- **Dark mode** — flag hard-coded colour hex values (`backgroundColor: '#FFFFFF'`) that don't respond to `useColorScheme()` / `@Environment(\.colorScheme)` / `UIDynamicProviderColor`
+
+#### ANTI-PATTERNS (MOBILE)
+
+- No `console.log` calls left in production code (bundle them out via Babel plugin or flag as tech debt)
+- No inline styles on list item components (re-creates style object every render — use `StyleSheet.create`)
+- No `setTimeout` used as a substitute for a proper loading state or animation callback
+- No fixed pixel dimensions for text (use scalable units or `PixelRatio`)
+- No gesture handlers on non-interactive elements without accessible labels
+- No `TouchableWithoutFeedback` wrapping non-interactive content just to dismiss the keyboard — use `ScrollView` with `keyboardShouldPersistTaps="handled"` instead
 
 ---
 
