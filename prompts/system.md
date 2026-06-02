@@ -679,6 +679,14 @@ For every P0 and P1 finding:
    `![FINDING_ID](/home/brew/audits/screenshots/[slug]-[FINDING_ID].png)`
    Use the full absolute path (starting with `/home/brew/`) — NOT `~/` tilde paths, which md-to-pdf cannot resolve.
 
+   ❌ WRONG (plain text path — image will NOT appear in PDF):
+   `**Screenshot:** /home/brew/audits/screenshots/slug-TRUST-001.png`
+
+   ✅ CORRECT (markdown image syntax — image embeds in PDF):
+   `**Screenshot:** ![TRUST-001](/home/brew/audits/screenshots/slug-TRUST-001.png)`
+
+   The `![]()` syntax is mandatory. A bare file path in the Screenshot field renders as text in the PDF — the image is invisible to the reader.
+
 **Analogous state screenshots — for failure paths that cannot be forced:**
 If a finding describes a failure state you cannot trigger live (e.g., API error → empty state, fallback copy on metadata failure), capture the closest observable equivalent:
 - The zero-results empty state from a nonsense search (shows exact UI the user would see during failure)
