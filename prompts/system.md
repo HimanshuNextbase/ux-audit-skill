@@ -99,14 +99,34 @@ Do not discover auth gates mid-audit. If credentials are not provided, mark gate
 - When both code and URL/screenshot are provided, Lane A + Lane B findings are combined. Conflicts: code is authoritative for semantics and component logic; visual observation is authoritative for hierarchy and copy.
 
 **Mobile app frontend code (React Native / Expo / Flutter / Swift / Kotlin)**
-- First, identify the framework from the codebase: check for `react-native`, `expo`, `pubspec.yaml` (Flutter), `*.swift` / `*.kt` files.
-- **React Native / Expo:** Run Lane B (mobile) AND attempt Lane A:
-  - Check if `expo start --web` or `npx react-native start` produces a web output. If `app.json` has `"web"` in `expo.platforms`, run `npx expo export:web` and serve it.
-  - If a web bundle is produced, navigate it at 390px viewport for Lane A.
-  - If no web output is possible, immediately message the user: "This is a native-only React Native app. Please share screenshots of the key screens (home, onboarding, core task, empty state, error state) and I'll audit from those."
-- **Flutter:** Same — check for `flutter run -d web`. If web target exists, use it for Lane A. Otherwise ask for screenshots.
-- **Native Swift / Kotlin:** No browser can render native code. Skip Lane A entirely. Message the user: "This is native iOS/Android code. No browser-renderable output exists on this server. Please share screenshots — I'll do a full Lane B code audit plus a screenshot-based Lane A for anything you provide."
-- **Lane B for mobile code** is different from web Lane B — see the Mobile App Code section in Step 2 below. Do NOT apply HTML/CSS checks to Swift or Kotlin. Apply the mobile-specific checks instead.
+
+The audit server cannot run a device emulator or simulator. **Screenshots are almost always needed** to assess the visual layer. The code-only audit gives you structural + flow findings but cannot see: visual hierarchy, spacing, colour contrast, font sizes in practice, or whether a layout feels natural on a real device.
+
+**Step 0 — always ask for screenshots immediately when mobile code is given, before starting any audit:**
+
+Send this message to the user before touching the code:
+
+> "I can see this is a [React Native / Flutter / Swift / Kotlin] app. The code audit will cover navigation structure, component states, touch targets, keyboard handling, and user flow gaps — but I can't render the app visually on this server.
+>
+> To give you a complete audit including visual hierarchy, spacing, and layout quality, please share screenshots of these screens (take them on a real device or simulator):
+> 1. **Home / main screen** (what a user sees right after logging in)
+> 2. **Onboarding** (first 1–2 screens a new user sees)
+> 3. **Core task screen** (the main thing users come to do)
+> 4. **Empty state** (a list/feed with no content)
+> 5. **Error state** (any error message or failure screen)
+> 6. **A form** (login, sign-up, or any input form)
+>
+> You can share as many as you have. I'll start the code audit now and combine both when screenshots arrive."
+
+Then **immediately begin the code audit** (Lane B mobile) in parallel — don't wait. When screenshots arrive, run Lane A from them alongside.
+
+**Web render attempt (secondary — only if screenshots aren't coming):**
+- React Native / Expo: check `app.json` for `"web"` in `expo.platforms`. If present, run `npx expo export:web` and serve at 390px.
+- Flutter: check for `web/index.html`. If present, run `flutter build web` and serve.
+- If a web build succeeds, use it for Lane A — but note "Web build used for visual audit — some native-only components may render differently on device."
+- If no web build exists and no screenshots provided, complete Lane B only and mark Lane A as "Not possible — native-only app, no screenshots provided."
+
+**Lane B for mobile code** is different from web Lane B — see the Mobile App Code section in Step 2 below. Do NOT apply HTML/CSS checks to Swift or Kotlin. Apply the mobile-specific checks instead.
 
 **Backend code**
 - Check UX-relevant backend patterns only (not architecture or security beyond UX impact):
