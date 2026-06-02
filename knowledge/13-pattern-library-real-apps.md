@@ -18,6 +18,9 @@ During **Step 3.5 — PATTERN UPGRADE**:
 
 The pattern tells you WHAT to suggest. Your job is to explain WHY it applies to this specific product and HOW to implement it here.
 
+**When a reference app DOES belong in the recommendation:**
+If the pattern is genuinely surprising or non-obvious, you may add one sentence at the END of the recommendation as credibility: "This pattern is proven — Coinbase, Airbnb, and Duolingo all use it in their core flows." Don't make it the headline, but do use it as a closing credibility signal when the recommendation is bold or asks for significant design change. The client needs to know the fix isn't speculation.
+
 ---
 
 ## CATEGORY: DASHBOARDS (Mobile & Desktop)

@@ -69,6 +69,25 @@ Minimum journeys to map (adjust for product type):
 - **Are there known problem areas?** — User complaints, support tickets, analytics drop-off points, stakeholder concerns
 - **What are the business stakes?** — Conversion, compliance deadline, accessibility lawsuit risk, launch readiness
 
+**Data check — ask NOW, before starting:**
+If the user has any of this data, ask for it upfront. It changes which findings are P0 vs. P2:
+- **Analytics funnel** — where do users drop off? (e.g. "35% leave after the sign-up step") — this makes Reach scores evidence-based, not guessed
+- **Support tickets / user complaints** — recurring issues users report directly → flag these as P0/P1 regardless of visual severity
+- **Session recordings** (Hotjar, LogRocket, FullStory) — even 3–5 cold-start session recordings reveal real user confusion invisible to an auditor
+- **Known conversion rate** — "sign-up rate is 2%" tells you the signup flow is the business-critical problem to prioritize
+
+If provided, **cite the data in findings**: "Analytics show 41% drop-off after the pricing page — this makes TRUST-001 P0 not P2." If not provided, note in the report: "Findings prioritized without funnel data — Reach scores are estimates."
+
+**Sensitive content screening — ask NOW for any product that handles:**
+- Adult / NSFW / sexual content → is there an age gate on public pages? Is 18+ confirmation at signup? Is content moderation in place?
+- Minors / children → COPPA compliance, age verification, no dark patterns targeting under-13s
+- Biometrics / face data → consent before capture, deletion path, data residency disclosure
+- Health / medical data → HIPAA-adjacent disclosures, data handling copy, no diagnoses without disclaimers
+- Financial data / payments → PCI-adjacent trust signals, refund policy, no hidden fees
+- Deepfakes / synthetic media / AI-generated likenesses → consent guardrails before upload, likeness rights copy, terms clarity
+
+If any of these apply, add a mandatory TRUST-000 finding covering the missing safeguard even if the visual UX is otherwise fine.
+
 **Credentials check — ask at Step 0, not mid-audit:**
 If the product has any of these flows, ask for test credentials or a session token NOW before starting:
 - Creator/seller/submit/list flow (submit form, agent listing, product upload)
@@ -1064,6 +1083,61 @@ LCP > 4s = P1 regardless of product type. TTI > 10s (e.g. 18s) = P1 for any cons
   - Does signup have explicit 18+ confirmation checkbox adjacent to Create Account?
   - File both as separate findings if absent — the landing page gate and the signup gate are independent requirements.
 
+#### ACCESSIBILITY (Baseline — not full WCAG, but the failures that block real users)
+
+Run this JS snippet to catch the most common a11y blockers automatically:
+
+```js
+(async () => {
+  const issues = [];
+  // 1. Images without alt text
+  document.querySelectorAll('img:not([alt])').forEach(img =>
+    issues.push({type:'img-no-alt', src: img.src.slice(-40)}));
+  // 2. Buttons with no accessible name
+  document.querySelectorAll('button, [role="button"]').forEach(btn => {
+    const name = btn.textContent?.trim() || btn.getAttribute('aria-label') || btn.getAttribute('title') || '';
+    if (!name) issues.push({type:'button-no-name', html: btn.outerHTML.slice(0,80)});
+  });
+  // 3. Inputs without labels
+  document.querySelectorAll('input, select, textarea').forEach(input => {
+    const id = input.id;
+    const hasLabel = id && document.querySelector(`label[for="${id}"]`);
+    const hasAria = input.getAttribute('aria-label') || input.getAttribute('aria-labelledby');
+    if (!hasLabel && !hasAria) issues.push({type:'input-no-label', name: input.name || input.type});
+  });
+  // 4. Heading hierarchy skips
+  const headings = [...document.querySelectorAll('h1,h2,h3,h4,h5,h6')].map(h => parseInt(h.tagName[1]));
+  for (let i=1;i<headings.length;i++) {
+    if (headings[i] - headings[i-1] > 1)
+      issues.push({type:'heading-skip', from:'h'+headings[i-1], to:'h'+headings[i]});
+  }
+  // 5. Very low contrast text (approximate — checks computed vs background)
+  const darkOnDark = [...document.querySelectorAll('p,span,a,button,label,h1,h2,h3')]
+    .filter(el => {
+      const s = window.getComputedStyle(el);
+      const fg = s.color; const bg = s.backgroundColor;
+      // Very rough: flag if both are dark or both are light
+      const isDark = c => c.includes('0, 0, 0') || parseInt(c.split(',')[0].replace(/\D/g,'')) < 80;
+      const isLight = c => parseInt(c.split(',')[0].replace(/\D/g,'')) > 200;
+      return (isDark(fg) && isDark(bg)) || (isLight(fg) && isLight(bg));
+    }).slice(0,3).map(el => el.tagName+': '+el.textContent?.slice(0,30));
+  if (darkOnDark.length) issues.push({type:'contrast-suspect', elements: darkOnDark});
+
+  console.log(JSON.stringify({a11y_issues: issues, count: issues.length}));
+})();
+```
+
+Flag any result with `count > 0` as an accessibility finding. Minimum checks for every audit:
+- **Images without alt text** → P1 (screen readers read filename instead)
+- **Buttons with no accessible name** → P1 (screen reader announces "button" with no context)
+- **Inputs without labels** → P1 (blind users can't fill the form)
+- **Heading hierarchy skips** (h1→h3, skipping h2) → P2 (disrupts screen reader navigation)
+- **Suspect contrast** → P2 flag, note "Verify manually — low-vision users may not be able to read this"
+
+Also check: `document.querySelector(':focus-visible')` is not `outline: none` — keyboard users need visible focus rings.
+
+Note in report: "This audit covers baseline a11y blockers detectable via DOM inspection. A full WCAG 2.1 AA audit requires screen reader testing and colour contrast measurement with a dedicated tool (WebAIM, axe DevTools)."
+
 #### PWA (if applicable)
 - Installable (manifest + service worker)
 - Offline mode communicates stale data with sync state and last-updated timestamp
@@ -1089,11 +1163,23 @@ Example: VirtualGF shows a "Download BiBi Chat!" modal on a site called VirtualG
 - FLOW-001: Modal interrupts web chat path before first value (Cooper friction)
 - TRUST-001: Modal uses a different product name — users see "VirtualGF" everywhere then get "BiBi Chat" popup, which reads as a scam
 
-**"What if" failure scenario testing** — run at least 3 off-happy-path tests per critical journey:
-- Wrong/invalid input at each required field — does the error recover gracefully and inline?
-- Back button at the worst point (mid-form, mid-checkout, mid-onboarding) — is state lost?
-- Slow/broken network mid-action — does the UI communicate what happened and offer retry?
-- Mobile → desktop handoff — is in-progress state (draft, cart, onboarding step) preserved across sessions?
+**"What if" failure scenario testing — run EVERY one of these, not just 3:**
+
+| Test | How to trigger | Pass condition |
+|------|---------------|----------------|
+| Invalid email in signup | Type `notanemail` and submit | Inline error on the field, not a page reload |
+| Wrong password | Type any wrong password | Inline error, not "account locked" on first try |
+| Empty required field submit | Leave required field blank and submit | Specific field highlighted + error message, not just a generic toast |
+| Back button mid-form | Fill 2 fields, hit back, come forward | Field values preserved — not cleared |
+| Network error mid-submit | Submit form while DevTools → Network → Offline | User sees "check your connection" + retry button, not a blank page |
+| Session expired mid-flow | Wait for token to expire (or delete cookie) then perform an action | Clean redirect to login with "Your session expired, please sign in" — not a broken page or raw 401 |
+| Upload large/wrong file type | Upload a 500MB file or wrong extension | Immediate client-side validation error before upload starts |
+| Search with no results | Search for `xzxzxzxzxz` | Helpful empty state with search tips or alternate action — not just "0 results" |
+| Rate limit trigger | Submit a form rapidly 5+ times | User-readable explanation + retry time, not a raw 429 |
+
+For each test, record: **Expected** (correct behavior) and **Actual** (what happened). Any gap = a finding.
+
+Note: slow network simulation (DevTools → Network throttle) tests how the UI behaves under realistic mobile conditions. Always run at least the top 3 rows of this table on the primary conversion flow.
 
 **Mobile app additional "what if" tests** — run these for every mobile app audit:
 - **App backgrounded mid-task** — user switches away and returns. Does the app restore the exact screen and state, or reset to home?
@@ -1190,7 +1276,7 @@ For each high-commitment step (sign-up, payment, content upload, sharing), ask: 
 - Sign-up: "Will I get spam?" / "Can I delete this?" → reassurance copy needed next to the submit button
 - Payment: "Is this safe?" / "Will I be auto-charged?" → security badge + clear billing terms at point of payment
 - Content upload/share: "Who can see this?" / "Can I undo?" → inline privacy hint before submit
-Missing inline reassurance at a commitment step = PSYCH finding.
+Missing inline reassurance at a commitment step = PSYCH finding. **MANDATORY: write at least one PSYCH-001 finding for every full audit.** If you finish the checklist and have no PSYCH finding, you missed something — every product has at least one commitment moment without enough reassurance. Go back and find it.
 
 **Progress and completion bias:**
 - Multi-step flows show a progress indicator so the user feels partially invested in completion?
@@ -1564,13 +1650,17 @@ Add a dedicated section to the report after the findings:
 - Business benefit: [conversion / retention / trust impact]
 
 **Effort:** Low / Medium / High
-[Low = copy change or 1-component edit; Medium = new component or flow change; High = architectural or multi-page change]
+[Low = copy change or 1-component edit, ~hours; Medium = new component or flow change, ~days; High = architectural or multi-page change, ~weeks]
+
+**Expected impact:** [Specific outcome: "Reduces signup drop-off" / "Increases first-session completion" / "Cuts support tickets about billing" — not "improves UX"]
 
 **Inspired by / reference:**
-[Name a product or pattern that does this well, or describe the UX principle it applies]
+[Name a product or pattern that does this well, or describe the UX principle it applies — one credibility sentence at the end only]
 ```
 
 Produce 3–6 UX-OPP recommendations per audit. Fewer is better — only include suggestions that are genuinely specific and actionable for this product. Generic suggestions are worse than none.
+
+**Prioritize UX-OPP recommendations by impact:** The first recommendation should be the one with the highest conversion/retention/trust impact, not the easiest to implement. If the user has provided funnel data, cite it: "Analytics show 41% drop-off at this step — this is the highest-ROI fix in the audit."
 
 Also produce a **Psychological Barriers** table and a **Strategic UX Position** block:
 
