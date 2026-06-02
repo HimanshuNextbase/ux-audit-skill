@@ -645,51 +645,74 @@ Before writing any finding about prices being wrong, toggles not working, or con
 3. Cross-check at least two price values against the toggle state
 If all three pass, the feature is working — do not file a finding.
 
-For every P0 and P1 finding:
-1. Open the browser and navigate to the EXACT page where the issue exists (not the audit report, not a file, the actual app URL/localhost)
-2. If the app requires login — stop and ask the user for credentials before proceeding. Do not skip or screenshot a login wall.
-3. Scroll to and visually locate the specific broken element on the page
-4. Inject this JS to annotate the element AND get its viewport coordinates for cropping:
-   ```js
-   (() => {
-     const el = document.querySelector('[YOUR_SELECTOR]');
-     if (!el) return;
-     el.scrollIntoView({block:'center', behavior:'instant'});
-     el.style.outline = '4px solid #FF3B30';
-     el.style.outlineOffset = '3px';
-     const badge = document.createElement('div');
-     badge.textContent = 'FINDING_ID';
-     badge.style.cssText = 'position:fixed;top:12px;right:12px;background:#FF3B30;color:#fff;padding:4px 10px;font:bold 13px monospace;border-radius:4px;z-index:999999;';
-     document.body.appendChild(badge);
-     const r = el.getBoundingClientRect();
-     const pad = 120;
-     console.log(JSON.stringify({
-       clip: {
-         x: Math.max(0, r.left - pad),
-         y: Math.max(0, r.top - pad),
-         width: Math.min(window.innerWidth, r.width + pad * 2),
-         height: Math.min(window.innerHeight, r.height + pad * 2)
-       }
-     }));
-   })();
-   ```
-5. Take a **viewport-only** screenshot (NOT full page). Use the `clip` coordinates from the JS output if the screenshot tool supports a clip/region parameter. If not, take a regular viewport screenshot — the element will be centered by `scrollIntoView`. Never capture the full page; viewport captures are enough and stay under 500KB.
+**SCREENSHOT WORKFLOW — follow this exact sequence for every P0/P1 finding:**
 
-   ❌ DO NOT use `browser_vision` to capture finding screenshots. `browser_vision` always returns the full-page cached image (5000px+ tall) — it is for analysis only, not for saving as evidence.
-   ✅ Use `browser_screenshot` (viewport-only) after the inject JS above.
+❌ **NEVER use `browser_vision` to save a finding screenshot.** `browser_vision` dumps the entire scrollable page (3000–6000px tall). That is a full-page image, not a cropped evidence screenshot. `browser_vision` is for reading/analysis only — never copy its cached output as a screenshot.
 
-6. After `browser_screenshot`, crop the saved image to focus on just the annotated element + context. Use this Python snippet:
-   ```bash
-   python3 -c "
-   from PIL import Image
-   img = Image.open('/home/brew/.hermes/cache/screenshots/browser_screenshot_HASH.png')
-   # Use clip coords from step 4: x, y, width, height
-   cropped = img.crop((CLIP_X, CLIP_Y, CLIP_X + CLIP_W, CLIP_Y + CLIP_H))
-   cropped.save('/home/brew/audits/screenshots/[slug]-[FINDING_ID].png')
-   print('Cropped:', cropped.size)
-   "
-   ```
-   If PIL/crop is not available, copy the viewport screenshot directly — a 577px-tall viewport shot is acceptable. A 5000px full-page dump is not.
+✅ **The correct 3-step process:**
+
+**Step A — Annotate and get element position:**
+```js
+// Replace YOUR_SELECTOR with the CSS selector for the broken element
+// Replace FINDING_ID with e.g. TRUST-001
+(() => {
+  const el = document.querySelector('YOUR_SELECTOR');
+  if (!el) { console.log(JSON.stringify({error:'selector not found'})); return; }
+  el.scrollIntoView({block:'center', behavior:'instant'});
+  el.style.outline = '4px solid #FF3B30';
+  el.style.outlineOffset = '3px';
+  const badge = document.createElement('div');
+  badge.textContent = 'FINDING_ID';
+  badge.style.cssText = 'position:fixed;top:12px;right:12px;background:#FF3B30;color:#fff;padding:4px 10px;font:bold 13px monospace;border-radius:4px;z-index:999999;';
+  document.body.appendChild(badge);
+  const r = el.getBoundingClientRect();
+  const pad = 100;
+  console.log(JSON.stringify({
+    element_visible: r.width > 0 && r.height > 0,
+    clip: {
+      x: Math.round(Math.max(0, r.left - pad)),
+      y: Math.round(Math.max(0, r.top - pad)),
+      width: Math.round(Math.min(window.innerWidth, r.width + pad * 2)),
+      height: Math.round(Math.min(window.innerHeight - 50, r.height + pad * 2))
+    }
+  }));
+})();
+```
+This scrolls the element into view, draws a red outline + badge, and prints the crop rectangle.
+
+**Step B — Take viewport screenshot then crop:**
+```bash
+# 1. Take viewport-only screenshot (browser_screenshot tool, NOT browser_vision)
+#    The element is now centered in view from Step A.
+
+# 2. Immediately crop using the clip coords from Step A output:
+python3 -c "
+from PIL import Image
+import glob, os
+
+# Find most recent screenshot in cache
+screenshots = sorted(glob.glob('/home/brew/.hermes/cache/screenshots/browser_screenshot_*.png'),
+                     key=os.path.getmtime, reverse=True)
+if not screenshots:
+    print('No screenshot found in cache')
+    exit(1)
+
+img = Image.open(screenshots[0])
+print(f'Source: {screenshots[0].split(\"/\")[-1]} — size: {img.size}')
+
+# Paste clip coords from Step A: {x, y, width, height}
+x, y, w, h = CLIP_X, CLIP_Y, CLIP_W, CLIP_H
+cropped = img.crop((x, y, x + w, y + h))
+out = '/home/brew/audits/screenshots/SLUG-FINDING_ID.png'
+cropped.save(out)
+print(f'Saved cropped: {cropped.size} → {out}')
+"
+```
+
+**Step C — Verify the crop shows the right thing:**
+The saved file should show just the broken element with ~100px of context around it — not the full page, not an unrelated part of the page. If `element_visible: false` in the Step A output, the element may be inside a collapsed section or hidden — note that in the finding instead of forcing a screenshot.
+
+**Fallback when selector fails:** If the JS returns `selector not found`, use a broader selector or take a plain viewport screenshot without annotation. Still save it — an unannotated viewport screenshot is better than a full-page dump.
 
 7. Save to `~/audits/screenshots/[slug]-[FINDING_ID].png`
 7. Reference the saved path in the finding's Screenshot field using embedded markdown image syntax so it appears inline in the PDF:
