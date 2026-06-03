@@ -1751,7 +1751,8 @@ Use the appropriate template:
 **Report cleanliness rules — do NOT include in the final report:**
 - **Step 0 product understanding block** — the "Step 0 — Understand the User & Their Product" heading and its content are internal workflow guidance. Never copy this section header or the 0.1/0.2/0.3/0.4 sub-blocks into the final report. Only the confirmed product summary from Step 0.4 may appear — briefly, in the report header — but do not label it "Step 0."
 - **Auditor field** — always write `**Auditor:** AI agent` in the report header. Do NOT write your agent name ("Audit"), a placeholder, or leave it blank.
-- **Score breakdown line** — do NOT include `**Score breakdown:** User impact X / Business criticality X / ...` in the report. The total score is sufficient (`**Priority: P1 | Score: 15**`). The breakdown is internal scoring data. Including it clutters every finding with an unreadable line of numbers.
+- **Score breakdown line or table** — do NOT include `**Score breakdown:** User impact X / ...` OR a `| Factor | Score |` table inside each finding. The total score is sufficient: `**Priority: P1 | Score: 15/20**` on one line. Both the inline breakdown and the table version are internal scoring data. They clutter every finding with unreadable numbers — omit them entirely.
+- **Duplicate screenshot paths** — when a finding already has `![ID](path)` embedded, do NOT also write `6. **Screenshot:** /home/brew/...` or `Screenshot: /home/brew/...` as plain text below it. One `![ID](path)` per finding is enough. Plain text paths are invisible in PDFs.
 - The Step 3 self-critique table (Philosophy / Hierarchy / Execution / Specificity / Restraint / Variety scores) — internal only. Run it silently to calibrate the AI-SLOP finding, then omit the table from the report entirely.
 - NOTIFY section when entirely untestable — skip it or write one sentence max: "Async UX not testable without a completed generation run."
 - FLOW "What-if failures tested" as a separate section — fold into the FLOW findings themselves.
@@ -1823,17 +1824,25 @@ Create the directory if it doesn't exist. Write the full report as rendered Mark
 
 Screenshot images in the report MUST use full absolute paths (`/home/brew/audits/screenshots/...`) written as markdown image syntax (`![ID](path)`) so they embed in the PDF. The `~/` tilde prefix does NOT work — always expand to `/home/brew/`.
 
-After writing the `.md` file, run the PDF generator script (it handles base64 image embedding and compact styling automatically):
+After writing the `.md` file, run the PDF generator script:
 ```bash
 bash /home/brew/audits/gen-pdf.sh /home/brew/audits/[product-slug]-[YYYY-MM-DD].md
 ```
-This produces `/home/brew/audits/[product-slug]-[YYYY-MM-DD].pdf` with all screenshots embedded inline. Then send it to Discord:
-```
-send_message(action="send", target="discord", message="MEDIA:/home/brew/audits/[product-slug]-[YYYY-MM-DD].pdf")
-```
-If the script fails, fall back to sending the `.md` file as a document attachment:
+
+**CRITICAL — PDF generation rules:**
+- ✅ ALWAYS use `bash /home/brew/audits/gen-pdf.sh` — this is the only tool that embeds screenshots into the PDF
+- ❌ NEVER use `pandoc`, `wkhtmltopdf`, `weasyprint`, `reportlab`, `fpdf`, `markdown`, or any Python-based PDF library — these produce text-only PDFs with no images (30KB blank output)
+- ❌ NEVER check if `pandoc` or `wkhtmltopdf` exist and try them as alternatives — they are not installed and will always fail or produce broken output
+- ❌ NEVER write your own PDF-generation Python code — `gen-pdf.sh` already exists and works
+
+If `gen-pdf.sh` itself fails (script error), the ONLY fallback is sending the `.md` file:
 ```
 send_message(action="send", target="discord", message="MEDIA:/home/brew/audits/[product-slug]-[YYYY-MM-DD].md [[as_document]]")
+```
+
+Then send the PDF to Discord:
+```
+send_message(action="send", target="discord", message="MEDIA:/home/brew/audits/[product-slug]-[YYYY-MM-DD].pdf")
 ```
 
 Confirm in your closing message: *"Report saved to /home/brew/audits/acme-2026-05-22.md — PDF with screenshots sent to Discord."*
