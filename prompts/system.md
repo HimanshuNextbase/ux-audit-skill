@@ -596,6 +596,22 @@ CRITICAL RULE: Screenshots must ALWAYS be of the live web app or running app UI 
 
 BROWSER TOOL RULE: Always use the built-in `browser_navigate`, `browser_screenshot`, `browser_inject_js`, and `browser_click` tools for all browser interaction. NEVER run Playwright or Puppeteer via the terminal (`node -e "require('playwright')"`, `npx playwright`, etc.) — those Node packages are not installed and will always fail. If a browser tool returns an error, retry with the same built-in tool — do not fall back to terminal.
 
+**`browser_vision` vs `browser_screenshot` — CRITICAL DIFFERENCE:**
+
+| Tool | What it captures | Use it for |
+|------|-----------------|-----------|
+| `browser_vision` | Full scrollable page (3000–6000px tall image) | Reading/analysing page content during Pass 1 discovery |
+| `browser_screenshot` | Visible viewport only (~577px tall) | Saving evidence screenshots for the report |
+
+❌ **NEVER use `browser_vision` output as a finding screenshot.** When you call `browser_vision`, it returns a description AND caches a full-page image. If you then copy that cache file to `~/audits/screenshots/`, you get a 5000px full-page dump where the actual broken element is invisible in the PDF — the reader just sees the top of the page.
+
+✅ **The ONLY correct screenshot workflow for findings:**
+1. `browser_inject_js` → scroll element into view + draw red outline + get clip coordinates
+2. `browser_screenshot` → captures the viewport with the annotated element centred
+3. Python PIL crop → cut to the clip rectangle so only the element + 100px context is shown
+
+This means EVERY finding screenshot should show: the specific broken element with a red outline, centred in the image, with ~100px of surrounding context. NOT the full page. NOT the top of the page. NOT whatever happened to be visible at the time `browser_vision` was called.
+
 ASYNC IN BROWSER CONSOLE: If you need `await` inside `browser_inject_js` or `browser_console`, always wrap the entire block in an async IIFE — bare `await` at top level causes a SyntaxError and the call will fail:
 ```js
 // ❌ WRONG — SyntaxError: await is only valid in async functions
@@ -680,39 +696,44 @@ If all three pass, the feature is working — do not file a finding.
 ```
 This scrolls the element into view, draws a red outline + badge, and prints the crop rectangle.
 
-**Step B — Take viewport screenshot then crop:**
-```bash
-# 1. Take viewport-only screenshot (browser_screenshot tool, NOT browser_vision)
-#    The element is now centered in view from Step A.
+**Step B — Take viewport screenshot then immediately crop and save:**
 
-# 2. Immediately crop using the clip coords from Step A output:
-python3 -c "
+After Step A runs (element is scrolled into view, outlined, clip coords printed), call `browser_screenshot` once, then run this terminal command to crop and save (replace the CAPS values):
+
+```bash
+python3 - << 'PY'
 from PIL import Image
 import glob, os
 
-# Find most recent screenshot in cache
-screenshots = sorted(glob.glob('/home/brew/.hermes/cache/screenshots/browser_screenshot_*.png'),
-                     key=os.path.getmtime, reverse=True)
+# Get the most recently modified screenshot from cache
+screenshots = sorted(
+    glob.glob('/home/brew/.hermes/cache/screenshots/browser_screenshot_*.png'),
+    key=os.path.getmtime, reverse=True
+)
 if not screenshots:
-    print('No screenshot found in cache')
-    exit(1)
+    print('ERROR: no screenshot in cache'); exit(1)
 
-img = Image.open(screenshots[0])
-print(f'Source: {screenshots[0].split(\"/\")[-1]} — size: {img.size}')
+src = screenshots[0]
+img = Image.open(src)
+print(f'Source: {os.path.basename(src)} {img.size}')
 
-# Paste clip coords from Step A: {x, y, width, height}
-x, y, w, h = CLIP_X, CLIP_Y, CLIP_W, CLIP_H
+# Fill in the clip coords from Step A output
+x, y, w, h = CLIP_X, CLIP_Y, CLIP_W, CLIP_H  # replace with actual numbers
+
+# Crop to the element + padding
 cropped = img.crop((x, y, x + w, y + h))
-out = '/home/brew/audits/screenshots/SLUG-FINDING_ID.png'
+
+# Save
+out = '/home/brew/audits/screenshots/PRODUCT_SLUG-FINDING_ID.png'
 cropped.save(out)
-print(f'Saved cropped: {cropped.size} → {out}')
-"
+print(f'Saved: {out}  size: {cropped.size}')
+PY
 ```
 
-**Step C — Verify the crop shows the right thing:**
-The saved file should show just the broken element with ~100px of context around it — not the full page, not an unrelated part of the page. If `element_visible: false` in the Step A output, the element may be inside a collapsed section or hidden — note that in the finding instead of forcing a screenshot.
+**Step C — Quick sanity check:**
+The saved image should be roughly 400–800px wide × 300–500px tall, showing the broken element centred with a red outline and red badge, with ~100px of surrounding context. If it shows the whole page or an unrelated section, Step A failed silently — retry with a different selector.
 
-**Fallback when selector fails:** If the JS returns `selector not found`, use a broader selector or take a plain viewport screenshot without annotation. Still save it — an unannotated viewport screenshot is better than a full-page dump.
+**Fallback when selector fails:** If Step A returns `error: selector not found`, scroll to the relevant section manually using `browser_click` or `browser_console` (window.scrollTo), then take a plain `browser_screenshot` without annotation. Copy the most recent cache file directly — an unannotated viewport shot is better than a full-page dump.
 
 7. Save to `~/audits/screenshots/[slug]-[FINDING_ID].png`
 7. Reference the saved path in the finding's Screenshot field using embedded markdown image syntax so it appears inline in the PDF:
