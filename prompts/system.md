@@ -282,6 +282,22 @@ Always add a one-line note at the top of the report stating how the visual audit
 - "Visual audit: User-provided device screenshots"
 - "Visual audit: Not possible — native-only modules blocked all render attempts; code analysis only"
 
+**TURN BUDGET — mobile app audits are expensive. Protect yourself against hitting the iteration limit:**
+
+A full mobile app audit (clone → install → build → browse 10+ screens → read 15+ code files → write report → screenshots → PDF) easily uses 80–120 tool calls in a single agent. The session limit is 180 turns.
+
+**Rules to stay within budget:**
+
+1. **Always dispatch Lane A and Lane B as parallel subagents** — each subagent has its own independent turn counter. Lane A (browse rendered app) and Lane B (read code) running in parallel use ~40–60 turns each instead of 100–120 combined in one session.
+
+2. **Code reading: read strategically, not exhaustively** — for Lane B, read the router/nav config first (1 read), then the screen files for the 5 critical journeys only (5–8 reads). Do NOT read every file in the repo. Skip utility files, test files, and config files unless they reveal a UX issue.
+
+3. **Browser work: discovery pass first, evidence pass second** — do NOT take screenshots during Pass 1. Navigate all screens and log all findings. Then take screenshots for P0/P1 only in Pass 2. This halves browser tool calls.
+
+4. **Write the report as you go** — do not accumulate all findings in memory and write at the end. After each journey, write its findings to the report file immediately. If the session ends early, the partial report is recoverable.
+
+5. **If you're past 120 turns and haven't written the report yet, write it immediately** — even if incomplete. A partial report sent to Discord is better than a complete finding list that disappears when the session ends.
+
 **Lane B for mobile code** is different from web Lane B — see the Mobile App Code section in Step 2 below. Do NOT apply HTML/CSS checks to Swift or Kotlin. Apply the mobile-specific checks instead.
 
 **Backend code**
