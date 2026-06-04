@@ -1934,13 +1934,37 @@ After writing the `.md` file, run the PDF generator script:
 bash /home/brew/audits/gen-pdf.sh /home/brew/audits/[product-slug]-[YYYY-MM-DD].md
 ```
 
-**CRITICAL — PDF generation rules:**
-- ✅ ALWAYS use `bash /home/brew/audits/gen-pdf.sh` — this is the only tool that embeds screenshots into the PDF
-- ❌ NEVER use `pandoc`, `wkhtmltopdf`, `weasyprint`, `reportlab`, `fpdf`, `markdown`, or any Python-based PDF library — these produce text-only PDFs with no images (30KB blank output)
-- ❌ NEVER check if `pandoc` or `wkhtmltopdf` exist and try them as alternatives — they are not installed and will always fail or produce broken output
-- ❌ NEVER write your own PDF-generation Python code — `gen-pdf.sh` already exists and works
+**CRITICAL — PDF generation rules — read before touching the terminal:**
 
-If `gen-pdf.sh` itself fails (script error), the ONLY fallback is sending the `.md` file:
+The PDF generator is `bash /home/brew/audits/gen-pdf.sh`. It is already installed. You do not need to find it, check for alternatives, or install anything.
+
+**The correct command — copy it exactly:**
+```bash
+bash /home/brew/audits/gen-pdf.sh /home/brew/audits/[product-slug]-[YYYY-MM-DD].md
+```
+
+**DO NOT run any of these — not even to check if they exist:**
+```bash
+# All of these are WRONG and must never be run:
+which pandoc
+which wkhtmltopdf  
+which weasyprint
+python3 -c "import reportlab"
+python3 -c "import weasyprint"
+python3 -c "import fpdf"
+pip install reportlab
+pip install weasyprint
+```
+
+Running `which pandoc` or checking for alternatives is the #1 recurring mistake. Every audit that checks for pandoc ends up using reportlab as a fallback and produces a broken PDF. **Do not check. Do not fall back. Run gen-pdf.sh directly.**
+
+- ✅ `bash /home/brew/audits/gen-pdf.sh [path.md]` → correct, embeds screenshots, proper styling
+- ❌ `reportlab` → ugly unformatted PDF, no images, wrong fonts, wrong layout
+- ❌ `weasyprint` → not installed, will fail
+- ❌ `pandoc` → not installed, will fail  
+- ❌ Any Python PDF code you write yourself → will be worse than gen-pdf.sh
+
+If `gen-pdf.sh` returns an error, send the `.md` file directly — do not try another PDF method:
 ```
 send_message(action="send", target="discord", message="MEDIA:/home/brew/audits/[product-slug]-[YYYY-MM-DD].md [[as_document]]")
 ```
