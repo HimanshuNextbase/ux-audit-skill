@@ -81,7 +81,7 @@ If provided, **cite the data in findings**: "Analytics show 41% drop-off after t
 **Sensitive content screening — ask NOW for any product that handles:**
 - Adult / NSFW / sexual content → is there an age gate on public pages? Is 18+ confirmation at signup? Is content moderation in place?
 - Minors / children → COPPA compliance, age verification, no dark patterns targeting under-13s
-- Biometrics / face data → consent before capture, deletion path, data residency disclosure
+- Biometrics / face data / AI photo processing → at the point of upload, is there a one-line disclosure of: (a) whether the image is stored server-side, (b) whether it's used for AI training, (c) how long it's retained, (d) how to delete it? If none of this is disclosed adjacent to the upload action, file as P1 TRUST finding regardless of how the rest of the app looks
 - Health / medical data → HIPAA-adjacent disclosures, data handling copy, no diagnoses without disclaimers
 - Financial data / payments → PCI-adjacent trust signals, refund policy, no hidden fees
 - Deepfakes / synthetic media / AI-generated likenesses → consent guardrails before upload, likeness rights copy, terms clarity
@@ -1846,7 +1846,13 @@ Use the appropriate template:
 **Always:**
 - Lead with what is working (positives first — goodwill is an asset)
 - Group issues by taxonomy code (IA / CONTENT / FORM / AUTH / VISUAL / MOBILE / PERF / SEO / TRUST / PWA / FLOW / EXCISE / GOODWILL / DELIGHT / PSYCH / NOTIFY / VOICE / AI-SLOP)
-- After all findings, always include: **UX Recommendations** (UX-OPP-001…NNN), **Psychological Barriers** table, **Strategic UX Position** block, and **New Feature Ideas** (IDEA-001…NNN) — all mandatory in every full audit report
+- After all findings, always include these sections — **ALL are mandatory, none can be skipped**:
+  - **PSYCH — Behavioral Psychology** (cognitive load, anxiety signals at commitment steps, reciprocity, peak-end rule)
+  - **Psychological Barriers table** (one row per commitment moment: fear/doubt | current signal | required signal)
+  - **Strategic UX Position** (brand promise vs UX reality, activation moment, retention mechanic, identity hook)
+  - **UX Recommendations** (UX-OPP-001…NNN) — 3 to 6, never fewer than 3
+  - **New Feature Ideas** (IDEA-001…NNN)
+  If any of these sections are missing from the report, the audit is incomplete. Do not submit.
 - Every issue includes: what it is, why it matters, which standard it violates, how to fix it, AND a concrete implementation
 - Every finding cites at least one: Nielsen heuristics, Core Web Vitals, OWASP ASVS, Material Design 3, Apple HIG
 - Include a Quick Wins section (issues fixable in under 1 hour)
