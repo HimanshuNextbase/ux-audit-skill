@@ -489,8 +489,31 @@ Set viewport to **1440×900** (desktop). Browse the entire product in a single l
 - This pass should cost ~15–20 tool calls total regardless of how many findings you find
 - When clicking interactive elements (toggles, tabs, accordions), run the settled-check before reading DOM state
 
-**PASS 1B — Mobile discovery (no screenshots, ~5–8 additional tool calls):**
-After completing desktop discovery, resize the viewport to **390×844** (iPhone 14) and repeat a focused sweep of the primary journey only — not every page, just the critical path:
+**SCROLL THE FULL PAGE — mandatory for every page visited in Pass 1:**
+Do not treat the above-fold content as the entire page. After landing on each page, scroll to the bottom using:
+```js
+(async () => {
+  // Scroll in 3 steps to trigger lazy-load
+  window.scrollTo(0, document.body.scrollHeight * 0.33);
+  await new Promise(r => setTimeout(r, 800));
+  window.scrollTo(0, document.body.scrollHeight * 0.66);
+  await new Promise(r => setTimeout(r, 800));
+  window.scrollTo(0, document.body.scrollHeight);
+  await new Promise(r => setTimeout(r, 1000));
+  console.log(JSON.stringify({
+    scrolled: true,
+    totalHeight: document.body.scrollHeight,
+    sections: [...document.querySelectorAll('section,main > div,[class*="section"],[class*="module"]')]
+      .slice(0, 12).map(el => el.className.split(' ')[0] || el.tagName)
+  }));
+})();
+```
+Audit ALL sections found below the fold: product carousels, category modules, loyalty/newsletter prompts, testimonials, social proof, footer content. Missing below-fold content = incomplete audit.
+
+**PASS 1B — Mobile discovery — THIS IS NOT OPTIONAL:**
+After completing desktop discovery AND the full scroll, resize to **390×844** (iPhone 14) and run a focused mobile sweep. **Skipping Pass 1B is the most common audit failure — it leaves mobile layout, navigation, and touch issues completely unchecked.**
+
+Resize to mobile and sweep the primary journey only — not every page, just the critical path:
 
 ```js
 // Resize to mobile viewport
@@ -748,6 +771,18 @@ PY
 
 **Step C — Quick sanity check:**
 The saved image should be roughly 400–800px wide × 300–500px tall, showing the broken element centred with a red outline and red badge, with ~100px of surrounding context. If it shows the whole page or an unrelated section, Step A failed silently — retry with a different selector.
+
+**Screenshot must match the finding type — never reuse an unrelated screenshot:**
+
+| Finding type | Correct screenshot shows |
+|-------------|------------------------|
+| Visual/layout issue | The broken UI element with red outline |
+| JavaScript/console error | The browser console with the error message visible |
+| Performance issue | The Lighthouse report score or metric chart |
+| Form validation | The form with the error state triggered |
+| Missing element | The location on page where the element should be |
+
+❌ **Never use a screenshot of the homepage hero as evidence for a JavaScript console error.** The screenshot must show the actual evidence described in the finding. If you can't get a console screenshot, describe the error in text and note "Screenshot: N/A — console error captured in Evidence field above."
 
 **Fallback when selector fails:** If Step A returns `error: selector not found`, scroll to the relevant section manually using `browser_click` or `browser_console` (window.scrollTo), then take a plain `browser_screenshot` without annotation. Copy the most recent cache file directly — an unannotated viewport shot is better than a full-page dump.
 
@@ -1133,6 +1168,22 @@ Work through each category below. Flag every issue with its taxonomy code.
 - Skeleton loading used for content areas, not just spinners
 - Chart areas have reserved dimensions to prevent layout shift
 
+**Image format check — run this before recommending AVIF/WebP. Never recommend a format without verifying what is currently served:**
+```js
+(async () => {
+  const imgs = [...document.querySelectorAll('img')].slice(0, 8).map(img => ({
+    src: img.src.split('?')[0].slice(-50),
+    format: img.src.split('?')[0].split('.').pop().toLowerCase(),
+    loading: img.loading,
+    fetchpriority: img.fetchPriority || img.getAttribute('fetchpriority'),
+    width: img.naturalWidth,
+    height: img.naturalHeight,
+  }));
+  console.log(JSON.stringify(imgs));
+})();
+```
+If images are already WebP/AVIF → note that in the finding, don't recommend the switch. Only file a PERF image-format finding if images are actually served as JPEG/PNG when WebP/AVIF would be better.
+
 **PERF priority thresholds — use these when scoring, not just "P2 for any perf issue":**
 | Metric | P1 threshold | P2 threshold | P3 |
 |--------|-------------|-------------|-----|
@@ -1149,6 +1200,21 @@ LCP > 4s = P1 regardless of product type. TTI > 10s (e.g. 18s) = P1 for any cons
 - No indexing blocks on revenue/conversion pages
 - Structured data valid (no critical errors)
 - Search Console performance data reviewed if available
+- **H1 presence check — always run this:**
+  ```js
+  console.log(JSON.stringify({
+    h1: [...document.querySelectorAll('h1')].map(h=>h.textContent.trim().slice(0,60)),
+    h2: [...document.querySelectorAll('h2')].map(h=>h.textContent.trim().slice(0,40)).slice(0,5),
+    h3: [...document.querySelectorAll('h3')].map(h=>h.textContent.trim().slice(0,40)).slice(0,5),
+  }));
+  ```
+  **Priority guidance for missing H1:**
+  - Major ecommerce homepage (high organic traffic, brand-level) → **P1** (SEO penalty risk at scale)
+  - SaaS marketing homepage → **P1** if no H1 at all
+  - Inner content/product pages → P2
+  - Single-page app where H1 is dynamically set → verify before filing; check rendered DOM, not source
+
+  Note: Lighthouse SEO score does NOT catch missing H1 — it only checks title/meta. Always check heading structure manually.
 
 #### TRUST (Security Baseline)
 - HTTPS enforced site-wide
@@ -1301,6 +1367,7 @@ Most UX checklists catch broken flows. This section catches flows that work tech
 **Social proof quality and placement:**
 - Social proof present AND specific? ("12,847 creators, avg 4.7★ on 2,300 reviews" converts; "creators love us" is invisible.)
 - Is it placed at the moment of hesitation — near CTAs, near price, near the commitment step — or marooned on a testimonials page the user never reaches?
+- **For ecommerce, marketplace, and consumer apps: if social proof (ratings, reviews, purchase counts, trust badges) is completely absent from the homepage and product cards, file this as a P2 TRUST/CONTENT finding — not just a note in PSYCH.** Social proof absence on a shopping homepage is a real conversion problem, not a minor style note.
 
 **Anxiety signals at commitment points:**
 For each high-commitment step (sign-up, payment, content upload, sharing), ask: what fear or doubt arises here? Flag if the UI fails to preemptively answer it inline.
@@ -1908,13 +1975,12 @@ Implication: [what this means for future audits of this type]
 - Product-specific implementation details (those don't generalise)
 - Things already in the checklists
 
-### 6.3 — Suggest skill improvements (optional, only if genuinely warranted)
+### 6.3 — Suggest skill improvements (optional — only if you found a REAL gap)
 
-If you found that a checklist item is consistently wrong, outdated, or missing, explicitly tell the user at the end of the audit:
+Only add this if you identified a genuine checklist gap — a type of issue you found that the skill has no instruction for. If nothing was missing, do not include this section at all. Do NOT write "No checklist gap found. No skill patch proposed." — that adds boilerplate noise to the report.
 
+If a real gap was found:
 > "I noticed [specific gap] — this checklist item may need updating. Want me to patch the skill?"
-
-If the user confirms, use `skill_manager` to patch the relevant file (`checklists/site.md`, `checklists/app.md`, or `prompts/system.md`). Do NOT self-patch without confirmation.
 
 ---
 
