@@ -188,11 +188,14 @@ Run both of these immediately after 0.4, before Step 1.
 | If the product is... | Load this |
 |----------------------|-----------|
 | Online store, D2C brand, shopping app | `skill_view("ux-audit", "knowledge/domains/ecommerce.md")` |
-| SaaS dashboard, B2B tool, productivity app | `skill_view("ux-audit", "knowledge/domains/saas-b2b.md")` |
+| B2B SaaS, team dashboard, enterprise tool, work collaboration | `skill_view("ux-audit", "knowledge/domains/saas-b2b.md")` |
+| Consumer app / B2C SaaS — used by individuals, freemium model, creative tools, AI tools, learning, health, personal productivity | `skill_view("ux-audit", "knowledge/domains/saas-consumer.md")` |
 | Dating app, social network, community, creator platform | `skill_view("ux-audit", "knowledge/domains/dating-social.md")` |
 | Fintech, payments, banking, investments, insurance | `skill_view("ux-audit", "knowledge/domains/fintech.md")` |
 | Marketplace, platform connecting two sides | `skill_view("ux-audit", "knowledge/domains/marketplace.md")` |
 | None of the above / generic / unclear | Skip — proceed with standard checklists |
+
+**B2B vs Consumer decision rule:** If individual users pay out of their own pocket (not expense account), it is consumer SaaS → load `saas-consumer.md`. If teams or companies pay and an admin manages accounts → B2B → load `saas-b2b.md`. When genuinely mixed (e.g. Notion), load both.
 
 Read the domain module before starting Pass 1. It tells you which failure patterns to check first, what PSYCH moments to focus on, and what "good" looks like for this industry. Do not copy it into the report — use it as your auditing lens.
 
@@ -2040,7 +2043,7 @@ import json, os, datetime
 SLUG         = "PRODUCT_SLUG"    # e.g. "stylemeup"
 PRODUCT_NAME = "PRODUCT NAME"    # e.g. "StyleMeUp"
 PRODUCT_TYPE = "PRODUCT TYPE"    # e.g. "mobile app" | "website" | "SaaS app"
-DOMAIN       = "DOMAIN"          # e.g. "ecommerce" | "fintech" | "saas-b2b" | "dating-social" | "marketplace" | "other"
+DOMAIN       = "DOMAIN"          # e.g. "ecommerce" | "fintech" | "saas-b2b" | "saas-consumer" | "dating-social" | "marketplace" | "other"
 SCORE        = 0.0               # overall UX score out of 10
 
 # Every finding from this audit. Status options:
