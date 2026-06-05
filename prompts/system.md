@@ -382,6 +382,13 @@ When delegating, each subagent receives:
 
 The main agent collects subagent results, de-duplicates, applies P0 overrides, and writes the final report.
 
+**Main agent post-aggregation steps (after both subagents return):**
+1. Read results from both subagents (desktop findings list + mobile findings list)
+2. Merge: same issue on both viewports → one finding, both screenshots, `Viewport: Desktop + Mobile`
+3. Write header + executive summary to `~/audits/[slug]-[date].md` immediately (don't wait)
+4. Append each finding as you process it — incremental writes, not one big write at the end
+5. Run gen-pdf.sh and send to Discord
+
 ### Subagent context block
 
 Every subagent call must include the product understanding summary from Step 0.4 verbatim in `context`. This is the subagent's only knowledge of the product — it has no access to the parent's conversation.
@@ -402,16 +409,23 @@ Checklist: [site.md / app.md]
 """
 ```
 
-### Lane A — Rendered Experience Subagent
+### Lane A — Rendered Experience (Desktop + Mobile in Parallel)
 
-Dispatch if URL, screenshots, or frontend code was provided. If no URL was given, the subagent discovers the live URL or runs the app locally — it never skips screenshots just because no URL was explicitly passed.
+Dispatch desktop and mobile as **two simultaneous subagents** using the `tasks` array. Both receive the same context block and run at the same time — wall-clock time = the slower of the two, not the sum. **Do NOT dispatch one after the other.**
 
 ```python
-delegate_task(
-    goal="""You are a Lane A UX auditor. Audit the rendered experience of this product.
+delegate_task(tasks=[
+  {
+    "goal": """You are Lane A-Desktop. Audit the rendered DESKTOP experience of this product.
 
 Load this skill file:
   skill_view("ux-audit", "prompts/system.md")         # full audit procedure — checklist is in Step 2
+
+**SCOPE OVERRIDE — Desktop only:**
+- Run Pass 1 at 1440×900 only.
+- Do NOT resize to mobile at any point. Do NOT run Pass 1B. The mobile subagent handles that.
+- In Pass 2, take screenshots at 1440px only.
+- Run CWV at 1440px only.
 
 **Step 0: URL Acquisition — do this first, before any auditing**
 
@@ -891,11 +905,149 @@ Voice consistency verdict — one sentence minimum, even if "Cannot assess — n
 UX Advisory — always include, even for quick audits:
   UX-OPP-001 through UX-OPP-NNN — flow simplification, conversion moments, discoverability, hierarchy, empty states, pattern upgrades (3–6 total, specific to this product)
   IDEA-001 through IDEA-NNN — new feature ideas grounded in observed user needs (2–4 total)
-""",
-    context=context,
-    toolsets=["web", "browser", "vision", "file", "terminal", "skills", "search", "todo"],
-)
+
+**CHECKPOINT — write before starting Pass 2 screenshots:**
+After scoring all findings and BEFORE taking any screenshots, write a draft checkpoint:
+```bash
+python3 -c "
+import json, datetime
+findings = '''[paste your draft findings list here — one per line: CODE-NNN | P0/P1/P2/P3 | title]'''
+open('/tmp/desktop-findings-draft.txt', 'w').write(findings)
+print('Checkpoint saved')
+"
 ```
+This protects your work: if Pass 2 hits the turn limit, the parent can read /tmp/desktop-findings-draft.txt to recover your findings without screenshots.
+""",
+    "context": context,
+    "toolsets": ["web", "browser", "vision", "file", "terminal", "skills", "search", "todo"],
+  },
+  {
+    "goal": """You are Lane A-Mobile. Audit the rendered MOBILE experience of this product.
+
+Load this skill file:
+  skill_view("ux-audit", "prompts/system.md")         # full audit procedure
+
+**SCOPE OVERRIDE — Mobile only:**
+- Your entire audit runs at 390×844 (iPhone 14) viewport. Do NOT use 1440px.
+- Run Pass 1B only (mobile discovery). Do NOT run Pass 1 (desktop).
+- In Pass 2, all screenshots are at 390px only.
+- Run CWV at 390px only.
+- Audit the PRIMARY JOURNEY only — not every page.
+
+**Step 0: URL Acquisition — do this first, before any auditing**
+
+Same rules as Lane A-Desktop: detect whether you have a URL (Case 1), runnable code (Case 2), URL in codebase (Case 3), or backend only (Case 4). Run the app locally if no URL given.
+
+**GEO-BLOCK / UNREACHABLE SITE — same detection as Lane A-Desktop:**
+1. Try browser_navigate. If ERR_TIMED_OUT, run TCP probe.
+2. If TCP blocked → stop, message user for screenshots.
+3. Do NOT file "site unreachable" as a UX finding.
+
+**PASS 1B — Mobile discovery:**
+
+Start at 390×844 immediately. Run the settled-check after every navigate:
+```js
+(async () => {
+  await new Promise(resolve => {
+    if (document.readyState === 'complete') { resolve(); return; }
+    window.addEventListener('load', resolve, { once: true });
+  });
+  const anims = document.getAnimations();
+  if (anims.length > 0) { await Promise.all(anims.map(a => a.finished.catch(() => {}))); }
+  await new Promise(r => setTimeout(r, 800));
+  console.log(JSON.stringify({ settled: true, readyState: document.readyState }));
+})();
+```
+
+Check for mobile-specific issues on the primary journey:
+- **Horizontal scroll** — any element wider than 390px
+- **Navigation collapse** — desktop nav → hamburger? Does hamburger work?
+- **Touch targets** — buttons/links visually smaller than ~44px height
+- **Text overflow** — headings or long words that overflow containers
+- **Stacked layout breaks** — side-by-side elements that overlap at 390px
+- **Font sizes** — text readable at 1440px but too small at 390px
+- **Forms** — inputs extending beyond screen width
+- **Fixed elements** — sticky headers eating too much vertical space
+- **Image scaling** — images breaking containers or becoming unreadable
+- **Modal/sheet sizing** — modals that don't fit or can't scroll
+
+Detect horizontal overflow:
+```js
+(async () => {
+  await new Promise(r => setTimeout(r, 500));
+  console.log(JSON.stringify({
+    viewport: 'set to 390px',
+    innerWidth: window.innerWidth,
+    hasScrollX: document.body.scrollWidth > window.innerWidth,
+    overflowingElements: [...document.querySelectorAll('*')]
+      .filter(el => el.getBoundingClientRect().right > window.innerWidth)
+      .slice(0,5).map(el => el.tagName + (el.className ? '.'+el.className.split(' ')[0] : ''))
+  }));
+})();
+```
+
+Tag all findings `[Mobile only]`.
+
+**CWV — mobile only:**
+After first navigate (before any interaction), run the LCP/TTFB observer from system.md. Record in CWV table as Mobile 390px row.
+
+**Score all findings:** assign P0/P1/P2/P3.
+
+**CHECKPOINT — write before starting screenshots:**
+```bash
+python3 -c "
+findings = '''[paste your draft mobile findings here]'''
+open('/tmp/mobile-findings-draft.txt', 'w').write(findings)
+print('Mobile checkpoint saved')
+"
+```
+
+**PASS 2 — Evidence (P0/P1 mobile findings only, at 390px):**
+Use the same 3-step screenshot workflow from system.md (annotate → browser_screenshot → PIL crop).
+All screenshots at 390px. Save to `/home/brew/audits/screenshots/[slug]-[CODE-NNN]-mobile.png`.
+Include full absolute paths in Screenshot fields.
+
+**Output format — return a structured finding list only (tagged [Mobile]):**
+
+  #### [CODE-NNN] — Title [Mobile]
+  **Priority: P[0-3] | Viewport: Mobile 390px**
+
+  ![CODE-NNN](/home/brew/audits/screenshots/[slug]-[CODE-NNN]-mobile.png)
+
+  **What:** [1–2 sentences]
+  **Fix:** [one sentence]
+
+  - **Evidence:** [CSS selector or DOM observation]
+  - **Impact:** [who is affected on mobile]
+  - **Repro steps:**
+      1. Open on 390px mobile viewport
+      2. Navigate to [URL/screen]
+      3. Observe [broken behaviour]
+  - **Expected:** [what should happen]
+  - **Actual:** [what actually happens]
+  - **Implementation:** [developer-ready fix]
+  - Files affected: [specific file:line if from code, else "UI only"]
+  - Standard: [Material Design 3 touch target / WCAG 2.5.5 / etc.]
+
+Also return:
+- CWV table — Mobile 390px row only
+- Journey scores for mobile primary journey
+""",
+    "context": context,
+    "toolsets": ["web", "browser", "vision", "file", "terminal", "skills", "search", "todo"],
+  },
+])
+```
+
+**After both subagents complete — parent aggregation:**
+
+The parent receives two results: desktop findings and mobile findings. Do the following:
+
+1. **De-duplicate cross-viewport findings:** If the same issue appears in both (e.g., broken CTA on both desktop and mobile), merge into one finding with `Viewport: Desktop 1440px + Mobile 390px` and include both screenshots.
+
+2. **Combine CWV tables:** The desktop subagent returns the 1440px row, mobile returns the 390px row. Merge into one table with both rows.
+
+3. **Proceed to Steps 3–6:** Write the full report (Step 5), generate the PDF, send to Discord.
 
 ### Lane B — Frontend Code Subagent
 
@@ -1930,6 +2082,13 @@ Save the final report to `~/audits/` so it is readable outside the agent:
 ```
 
 Create the directory if it doesn't exist. Write the full report as rendered Markdown. If the user requested issue-entry tickets, also write them to `~/audits/[product-slug]-[YYYY-MM-DD]-issues.json`.
+
+**Write incrementally — do NOT wait until the whole report is finished to save:**
+1. Write the header + executive summary first, then save.
+2. Append each finding as you write it — use `write_file` with the growing content each time.
+3. This means if the session hits the turn limit mid-report, what is already written is recoverable.
+
+This is especially important when aggregating from two parallel subagents: write the desktop findings first, then append mobile findings, then append the advisory sections. Never hold the entire report in memory and write once at the end.
 
 **Convert to PDF and send to Discord — mandatory after every audit:**
 
