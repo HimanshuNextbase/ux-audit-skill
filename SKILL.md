@@ -63,44 +63,27 @@ Then follow **Step 0 in that file**. It covers:
 
 **If the user already provided context** (URL, description, scope), infer what you can from it — do not ask for information already given. Confirm your understanding in the 0.4 format and proceed.
 
-### Step 1 — Choose Audit Mode
+### Step 1 — Orchestration
 
-**Full audit** (recommended for any serious review):
-- Load the relevant checklist:
-  - Website / web app → `skill_view("ux-audit", "checklists/site.md")`
-  - Mobile app / PWA → `skill_view("ux-audit", "checklists/app.md")`
-- Load one checklist per surface. For a product that genuinely spans both surfaces (e.g., a PWA with a full web app), load both.
+system.md (already loaded) contains the full orchestration logic. Follow Step 1.5 there.
 
-**Quick scan** (top 10 issues, < 10 min):
-- Load: `skill_view("ux-audit", "prompts/quick-scan.md")`
-- No checklist needed — the quick scan prompt is self-contained.
+Key rules:
+- **URL provided** → ALWAYS dispatch Lane A-Desktop + Lane A-Mobile as parallel subagents via `delegate_task(tasks=[...])`
+- **Frontend code provided** → dispatch Lane B subagent in parallel with Lane A
+- **Backend code provided** → dispatch Lane C subagent
+- **Never do browser work inline in the main agent** — the main agent dispatches and aggregates only
 
-### Step 1.5 — Orchestration
+Each subagent loads its own procedure:
+- Lane A-Desktop: `skill_view("ux-audit", "prompts/lane-a-desktop.md")` + `skill_view("ux-audit", "prompts/audit-checks.md")`
+- Lane A-Mobile: `skill_view("ux-audit", "prompts/lane-a-mobile.md")` + `skill_view("ux-audit", "prompts/audit-checks.md")`
+- Lane B: `skill_view("ux-audit", "prompts/audit-checks.md")`
+- Lane C: `skill_view("ux-audit", "prompts/audit-checks.md")`
 
-Look at what the user provided and decide the work structure from that. See `prompts/system.md` Step 1.5 for the full principle.
+**Do NOT load** `checklists/site.md`, `checklists/app.md`, or any template files. The checklist is in `audit-checks.md`. The report format is in `system.md` Step 5.
 
-- Small scope (quick scan, single page, one input type) → work inline, no delegation needed
-- Deep scope or multiple independent input types → use `delegate_task`, one subagent per input type
-- Each subagent self-loads the skill files it needs via `skill_view()` and returns structured findings
-- Main agent merges results, de-duplicates, applies P0 overrides, writes the report
+### Step 2 — Deliver the Report
 
-### Step 2 — Lane Reference (for subagents)
-
-The three-lane model from `prompts/system.md` Step 2 is executed **by subagents**, not the main agent:
-- **Lane A** (URL / screenshot) — rendered experience: IA, content, visual, forms, performance, FLOW, EXCISE, GOODWILL, DELIGHT, NOTIFY, VOICE, anti-slop
-- **Lane B** (frontend code) — static analysis: semantic HTML structure, 8-state components, CWV code patterns
-- **Lane C** (backend code) — UX-relevant server patterns: error format, auth expiry, rate limiting, validation alignment, long-running ops
-
-Score every finding with the 5-factor rubric (0–4 each, max 20) → P0–P3 band.
-
-**P0 override:** Force P0 if an issue blocks sign-in, payment/billing, legal consent, or task completion on a critical journey — regardless of score.
-
-### Step 3 — Deliver the Report
-
-Choose the output template that matches the audience:
-- `skill_view("ux-audit", "templates/full-report.md")` — product, design, and engineering teams
-- `skill_view("ux-audit", "templates/executive-scorecard.md")` — leadership / business stakeholders
-- `skill_view("ux-audit", "templates/issue-entry.json")` — per-issue structured ticket (GitHub Issues, Jira, Linear)
+Follow Step 5 in system.md for the report format. Write the report directly in markdown — do not load a template file. Run `gen-pdf.sh` and send to Discord.
 
 ---
 
