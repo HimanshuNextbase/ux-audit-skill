@@ -179,6 +179,54 @@ Surface type: [web / mobile app]
 **Wait for confirmation or correction before proceeding to Step 1.**
 If the user has already provided all this context, confirm your understanding and proceed immediately — do not ask redundant questions.
 
+### 0.5 — Load Domain Module + Check Audit History
+
+Run both of these immediately after 0.4, before Step 1.
+
+**A) Domain module — load if the product matches a known domain:**
+
+| If the product is... | Load this |
+|----------------------|-----------|
+| Online store, D2C brand, shopping app | `skill_view("ux-audit", "knowledge/domains/ecommerce.md")` |
+| SaaS dashboard, B2B tool, productivity app | `skill_view("ux-audit", "knowledge/domains/saas-b2b.md")` |
+| Dating app, social network, community, creator platform | `skill_view("ux-audit", "knowledge/domains/dating-social.md")` |
+| Fintech, payments, banking, investments, insurance | `skill_view("ux-audit", "knowledge/domains/fintech.md")` |
+| Marketplace, platform connecting two sides | `skill_view("ux-audit", "knowledge/domains/marketplace.md")` |
+| None of the above / generic / unclear | Skip — proceed with standard checklists |
+
+Read the domain module before starting Pass 1. It tells you which failure patterns to check first, what PSYCH moments to focus on, and what "good" looks like for this industry. Do not copy it into the report — use it as your auditing lens.
+
+**B) Audit history — check if this product was audited before:**
+
+Derive the product slug from the product name (lowercase, hyphens, no spaces — e.g. "StyleMeUp" → `stylemeup`, "Skechers India" → `skechers-in`).
+
+```bash
+python3 - << 'PY'
+import json, os, sys
+slug = "PRODUCT_SLUG"  # replace with actual slug
+history_path = f"/home/brew/audits/history/{slug}.json"
+if not os.path.exists(history_path):
+    print(json.dumps({"first_audit": True}))
+else:
+    with open(history_path) as f: data = json.load(f)
+    audits = data.get("audits", [])
+    last = audits[-1] if audits else {}
+    open_f = [f for f in last.get("findings", []) if f.get("status") not in ("fixed",)]
+    print(json.dumps({"first_audit": False, "audit_count": len(audits),
+        "last_date": last.get("date"), "last_score": last.get("score"),
+        "open_findings": open_f}))
+PY
+```
+
+**If history exists**, prepend this to your Step 0.4 summary:
+```
+Audit history: [N] previous audits. Last score: [X/10] on [date].
+Previously open findings: [list ID + title for each still-open finding]
+→ During this audit, explicitly check whether each of these was fixed.
+```
+
+**If no history (first audit)**, proceed normally — this audit establishes the baseline.
+
 ---
 
 ## Step 1 — Inventory the Target
@@ -1981,7 +2029,57 @@ send_message(action="send", target="discord", message="MEDIA:/home/brew/audits/[
 
 Confirm in your closing message: *"Report saved to /home/brew/audits/acme-2026-05-22.md — PDF with screenshots sent to Discord."*
 
-### 6.2 — Save patterns to memory
+### 6.2 — Write audit history record
+
+Run this immediately after saving the markdown report, before generating the PDF. Fill in all CAPS values from the audit you just completed:
+
+```bash
+python3 - << 'PY'
+import json, os, datetime
+
+SLUG         = "PRODUCT_SLUG"    # e.g. "stylemeup"
+PRODUCT_NAME = "PRODUCT NAME"    # e.g. "StyleMeUp"
+PRODUCT_TYPE = "PRODUCT TYPE"    # e.g. "mobile app" | "website" | "SaaS app"
+DOMAIN       = "DOMAIN"          # e.g. "ecommerce" | "fintech" | "saas-b2b" | "dating-social" | "marketplace" | "other"
+SCORE        = 0.0               # overall UX score out of 10
+
+# Every finding from this audit. Status options:
+#   "new"            — first time this finding appears
+#   "persistent"     — was open in previous audit, still open now
+#   "fixed"          — was open before, now resolved
+#   "partially_fixed"— addressed but not fully resolved
+#   "open"           — use for all findings in a first audit
+FINDINGS = [
+    {"id": "FLOW-001", "priority": "P1", "status": "open", "title": "FINDING TITLE"},
+]
+
+today = datetime.date.today().isoformat()
+path = f"/home/brew/audits/history/{SLUG}.json"
+os.makedirs("/home/brew/audits/history", exist_ok=True)
+
+data = json.load(open(path)) if os.path.exists(path) else {
+    "slug": SLUG, "product_name": PRODUCT_NAME,
+    "product_type": PRODUCT_TYPE, "domain": DOMAIN, "audits": []
+}
+data.update({"product_name": PRODUCT_NAME, "product_type": PRODUCT_TYPE,
+             "domain": DOMAIN, "last_audit": today, "last_score": SCORE})
+data["audits"].append({"date": today, "score": SCORE, "findings": FINDINGS,
+                       "report_path": f"/home/brew/audits/{SLUG}-{today}.md"})
+
+json.dump(data, open(path, "w"), indent=2)
+print(f"History saved: {path} ({len(data['audits'])} total audits)")
+
+scores = [a["score"] for a in data["audits"] if a.get("score")]
+if len(scores) >= 2:
+    trend = scores[-1] - scores[-2]
+    print(f"Score trend: {scores[-2]} → {scores[-1]} ({'↑' if trend>0 else '↓' if trend<0 else '→'}{abs(trend):.1f})")
+PY
+```
+
+If this is the second or later audit, add a score trend line to the executive summary:
+> "UX score: **X/10** (was Y/10 in [month] — ↑Z improvement)" or "↓Z regression — see PERF-001, TRUST-002"
+
+### 6.3 — Save patterns to memory
 
 After saving the report, call the `memory` tool to record what surprised you or what generalises beyond this audit. Save to target `memory` (your personal notes), not `user`.
 

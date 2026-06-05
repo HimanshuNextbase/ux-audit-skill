@@ -176,6 +176,10 @@ Nielsen 10 Heuristics · Google Core Web Vitals · OWASP ASVS · Material Design
 - Load one checklist per surface — load both only for products that genuinely span both (PWA + full web app)
 - Load knowledge files selectively — only when deeper reference is needed on a specific topic
 - Every finding must have: taxonomy code, priority band, score breakdown, affected flows, fix recommendation, standards citation
+- Do not convert optional onboarding, linking, or discovery prompts into setup blockers unless the UI or deterministic state proves setup is required for the audited journey
+- Do not import copy, screenshots, or product nouns from adjacent pages/reports; every quoted string must be visible in the audited page/screenshot or cited from exact code/DOM evidence
+- If a finding is visually understandable, attach the relevant screenshot even when it is P2/P3 and especially when the user asks for reference images
+- For raw/internal status findings such as `NO_REPLY`, explain the user-facing harm and provide a replacement label; do not assume the status itself is wrong
 - Anti-slop detection is mandatory — check for AI-generated UI fingerprints (The AI nav, gradient headline, 3-column feature grid, etc.)
 - Self-critique before delivery: score on Philosophy / Hierarchy / Execution / Specificity / Restraint / Variety (1–5 each)
 
