@@ -266,7 +266,7 @@ Look at what the user actually gave you. Decide the work structure from that —
 When delegating, each subagent receives:
 - The product understanding summary from Step 0.4 (verbatim — the subagent has no access to the parent conversation)
 - Exactly the input it is responsible for (its URL, its files, its screenshots)
-- Instruction to load `prompts/system.md` via `skill_view()` (system.md contains all checklists inline — do not load separate checklist files)
+- Instruction to load `prompts/audit-checks.md` via `skill_view()` — this contains the checklist, anti-slop, advisory, and scoring rubric. Do NOT load system.md (it is the main agent's orchestration file, not the subagent checklist)
 - The output format: structured finding list only (not a full report)
 
 The main agent collects subagent results, de-duplicates, applies P0 overrides, and writes the final report.
@@ -308,7 +308,7 @@ delegate_task(tasks=[
     "goal": """You are Lane A-Desktop. Audit the rendered DESKTOP experience of this product.
 
 Load this skill file:
-  skill_view("ux-audit", "prompts/system.md")         # full audit procedure — checklist is in Step 2
+  skill_view("ux-audit", "prompts/audit-checks.md")   # checklist, anti-slop, advisory, scoring, output format
 
 **SCOPE OVERRIDE — Desktop only:**
 - Run Pass 1 at 1440×900 only.
@@ -469,7 +469,7 @@ Report viewport in each finding's Evidence field: `Evidence: [Desktop 1440px] se
 
 If a finding is on a page that was already visited in Pass 1 for another finding — handle both in a single navigation. Never revisit a URL more than once in Pass 2.
 
-Work through every Lane A category in system.md Step 2:
+Work through every Lane A category in audit-checks.md Step 2:
   IA, CONTENT, FORM, AUTH, VISUAL, MOBILE, PERF,
   SEO, TRUST, PWA (if applicable),
   FLOW (4-axis journey scores + TTFV + "what if" + "3 Days Later"),
@@ -480,9 +480,9 @@ Work through every Lane A category in system.md Step 2:
   NOTIFY (async UX),
   VOICE (tone consistency).
 
-Then run the anti-slop check from system.md Step 3.
+Then run the anti-slop check from audit-checks.md Step 3.
 
-Then run the UX Advisory pass from system.md Step 3.5:
+Then run the UX Advisory pass from audit-checks.md Step 3.5:
   FLOW SIMPLIFICATION — can any critical journey be shorter?
   CONVERSION MOMENTS — where will users hesitate or leave?
   FEATURE DISCOVERABILITY — what is hidden that should be obvious?
@@ -812,7 +812,7 @@ This protects your work: if Pass 2 hits the turn limit, the parent can read /tmp
     "goal": """You are Lane A-Mobile. Audit the rendered MOBILE experience of this product.
 
 Load this skill file:
-  skill_view("ux-audit", "prompts/system.md")         # full audit procedure
+  skill_view("ux-audit", "prompts/audit-checks.md")   # checklist, anti-slop, advisory, scoring, output format
 
 **SCOPE OVERRIDE — Mobile only:**
 - Your entire audit runs at 390×844 (iPhone 14) viewport. Do NOT use 1440px.
@@ -945,7 +945,7 @@ delegate_task(
     goal="""You are a Lane B UX auditor. Audit the frontend code for UX-relevant issues.
 
 Load this skill file:
-  skill_view("ux-audit", "prompts/system.md")   # read Lane B section
+  skill_view("ux-audit", "prompts/audit-checks.md")   # Lane B checklist, anti-slop, scoring, output format
 
 **First: detect the frontend type from the code.**
 - Check for `package.json` → look for `"react-native"`, `"expo"`, `"@react-navigation"` → mobile React Native
@@ -954,7 +954,7 @@ Load this skill file:
 - Check for `*.kt` files → native Android
 - Check for `*.html`, React/Vue/Svelte with DOM output → web frontend
 
-Then work through the correct Lane B section in system.md Step 2:
+Then work through the correct Lane B section in audit-checks.md Step 2:
 - **Web frontend** → HTML Semantics, 8-state component coverage, performance code patterns, anti-slop code checks
 - **Mobile app code (React Native / Expo / Flutter / Swift / Kotlin)** → Mobile App Code section (touch targets, navigation, keyboard, state coverage, platform patterns, user flow mapping)
 
@@ -1017,9 +1017,9 @@ delegate_task(
     goal="""You are a Lane C UX auditor. Audit the backend code for UX-relevant patterns.
 
 Load this skill file:
-  skill_view("ux-audit", "prompts/system.md")   # read Lane C section
+  skill_view("ux-audit", "prompts/audit-checks.md")   # Lane C checklist, scoring, output format
 
-Work through every Lane C check in system.md Step 2:
+Work through every Lane C check in audit-checks.md Step 2:
   Error response format, auth/session expiry UX, rate limiting UX (429 + Retry-After),
   server/client validation alignment, long-running operation handling.
 
