@@ -83,7 +83,24 @@ Each subagent loads its own procedure:
 
 ### Step 2 — Deliver the Report
 
-Follow Step 5 in system.md for the report format. Write the report directly in markdown — do not load a template file. Run `gen-pdf.sh` and send to Discord.
+Follow Step 5 in system.md for the report format. Write the report directly in markdown — do not load a template file.
+
+**PDF GENERATION — THIS IS THE ONLY CORRECT METHOD:**
+```bash
+bash /home/brew/audits/gen-pdf.sh /home/brew/audits/[slug]-[date].md
+```
+
+❌ **NEVER use any of these — not even to check if they exist:**
+```
+reportlab · pandoc · wkhtmltopdf · weasyprint · fpdf
+which pandoc · python3 -c "import reportlab" · pip install reportlab
+```
+If `gen-pdf.sh` fails, send the `.md` file to Discord directly. Do not attempt any fallback PDF method.
+
+Then send to Discord:
+```
+send_message(action="send", target="discord", message="MEDIA:/home/brew/audits/[slug]-[date].pdf")
+```
 
 ---
 
